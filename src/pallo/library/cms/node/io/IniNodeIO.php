@@ -1,0 +1,261 @@
+<?php
+
+namespace pallo\library\cms\node\io;
+
+use pallo\library\cms\exception\CmsException;
+use pallo\library\cms\node\Node;
+use pallo\library\cms\node\NodeProperty;
+use pallo\library\config\ConfigHelper;
+use pallo\library\system\file\File;
+
+use \Exception;
+
+/**
+ * INI implementation of the NodeIO
+ */
+class IniNodeIO extends AbstractNodeIO {
+
+    /**
+     * Name of the type property
+     * @var string
+     */
+    const PROPERTY_TYPE = 'type';
+
+    /**
+     * Name of the id property
+     * @var string
+     */
+    const PROPERTY_ID = 'id';
+
+    /**
+     * Name of the parent property
+     * @var string
+     */
+    const PROPERTY_PARENT = 'parent';
+
+    /**
+     * Name of the order property
+     * @var string
+     */
+    const PROPERTY_ORDER = 'order';
+
+    /**
+     * Instance of the config helper
+     * @var pallo\library\config\ConfigHelper
+     */
+    protected $configHelper;
+
+    /**
+     * Path for the node files
+     * @var pallo\library\system\file\File
+     */
+    protected $path;
+
+    /**
+     * Constructs a new ini node IO
+     * @param pallo\library\system\file\File $path Path for the data files
+     * @param pallo\library\config\ConfigHelper $configHelper Instance of the
+     * configuration helper
+     * @return null
+     */
+    public function __construct(File $path, ConfigHelper $configHelper) {
+        $this->path = $path;
+        $this->configHelper = $configHelper;
+    }
+
+    /**
+     * Reads all the nodes from the data source
+     * @return array Array with Node objects
+     */
+    protected function readNodes() {
+        $this->nodes = array();
+
+        if (!$this->path->exists()) {
+            return $nodes;
+        }
+
+        $directories = $this->path->read();
+        foreach ($directories as $directory) {
+            if (!$directory->isDirectory()) {
+                continue;
+            }
+
+            $files = $directory->read();
+            foreach ($files as $file) {
+                if ($file->isDirectory() || $file->getExtension() != 'ini') {
+                    continue;
+                }
+
+                try {
+                    $ini = $file->read();
+                    $node = $this->getNodeFromIni($ini);
+                } catch (Exception $exception) {
+                    throw new CmsException('Could not parse the INI configuration from ' . $file->getName(), 0, $exception);
+                }
+
+                $this->nodes[$node->getId()] = $node;
+            }
+        }
+
+        // set the parent node instances
+        foreach ($this->nodes as $node) {
+            $parentId = $node->getParentNodeId();
+            if (!$parentId) {
+                continue;
+            }
+
+            if (isset($this->nodes[$parentId])) {
+                $node->setParentNode($this->nodes[$parentId]);
+            } else {
+                $rootId = $node->getRootNodeId();
+                if (isset($this->nodes[$rootId])) {
+                    $node->setParentNode($this->nodes[$rootId]);
+                }
+            }
+        }
+
+        return $this->nodes;
+    }
+
+    /**
+     * Gets a node from a INI string
+     * @param string $ini
+     * @return joppa\model\node\Node
+     */
+    protected function getNodeFromIni($ini) {
+        $ini = $this->parseIni($ini);
+
+        if (!isset($ini[self::PROPERTY_ID])) {
+            throw new CmsException('No id provided for the node');
+        }
+        $id = $ini[self::PROPERTY_ID];
+        unset($ini[self::PROPERTY_ID]);
+
+        if (!isset($ini[self::PROPERTY_TYPE])) {
+            throw new JoppaException('No type provided for node ' . $id);
+        }
+        $type = $ini[self::PROPERTY_TYPE];
+        unset($ini[self::PROPERTY_TYPE]);
+
+        if (!isset($ini[self::PROPERTY_PARENT])) {
+            $parent = null;
+            $order = null;
+        } else {
+            $parent = $ini[self::PROPERTY_PARENT];
+            unset($ini[self::PROPERTY_PARENT]);
+
+            if (isset($ini[self::PROPERTY_ORDER])) {
+                $orderIndex = $ini[self::PROPERTY_ORDER];
+                unset($ini[self::PROPERTY_ORDER]);
+            } else {
+                $orderIndex = 1;
+            }
+        }
+
+        $node = $this->nodeModel->createNode($type);
+        $node->setId($id);
+
+        if ($parent) {
+            $node->setParent($parent);
+            $node->setOrderIndex($orderIndex);
+        }
+
+        $inheritPrefixLength = strlen(NodeProperty::INHERIT_PREFIX);
+        foreach ($ini as $key => $value) {
+            $inherit = false;
+
+            if (strpos($key, NodeProperty::INHERIT_PREFIX) === 0) {
+                $key = substr($key, $inheritPrefixLength);
+                $inherit = true;
+            }
+
+            $node->set($key, $value, $inherit);
+        }
+
+        return $node;
+    }
+
+    /**
+     * Parse the INI in a array
+     * @param string $ini INI contents
+     * @return array
+     */
+    protected function parseIni($ini) {
+        $parsedIni = @parse_ini_string($ini, true);
+        if ($parsedIni === false) {
+            throw new CmsException('Could not parse ini: ' . $ini);
+        }
+
+        return $this->configHelper->flattenConfig($parsedIni);
+    }
+
+    /**
+     * Writes a node into the data source
+     * @param pallo\library\cms\node\Node $node
+     * @return null
+     */
+    protected function writeNode(Node $node) {
+        $contents = $this->getIniFromNode($node);
+
+        $nodeFile = $this->getNodeFile($node);
+
+        $nodeFile->getParent()->create();
+        $nodeFile->write($contents);
+
+        // @todo clear cache
+    }
+
+    /**
+     * Gets the ini string of a node
+     * @param pallo\library\cms\node\Node $node
+     * @return string
+     */
+    protected function getIniFromNode(Node $node) {
+        $properties = array();
+        $properties[self::PROPERTY_TYPE] = new NodeProperty(self::PROPERTY_TYPE, $node->getType());
+        $properties[self::PROPERTY_ID] = new NodeProperty(self::PROPERTY_ID, $node->getId());
+        $properties[self::PROPERTY_PARENT] = new NodeProperty(self::PROPERTY_PARENT, $node->getParent());
+        $properties[self::PROPERTY_ORDER] = new NodeProperty(self::PROPERTY_ORDER, $node->getOrderIndex());
+        $properties += $node->getProperties();
+
+        $ini = '';
+        foreach ($properties as $property) {
+            $ini .= $property->getIniString() . "\n";
+        }
+
+        return $ini;
+    }
+
+    /**
+     * Deletes a node
+     * @param pallo\library\cms\node\Node $node
+     * @return null
+     */
+    protected function deleteNode(Node $node) {
+        $rootNodeId = $node->getRootNodeId();
+        $nodeId = $node->getId();
+
+        if ($rootNodeId == $nodeId) {
+            $nodeFile = $this->path->getChild($rootNodeId);
+        } else {
+            $nodeFile = $this->getNodeFile($node);
+        }
+
+        $nodeFile->delete();
+
+        // @todo clear cache
+    }
+
+    /**
+     * Gets the file for the node
+     * @param string $nodeId Id of the node
+     * @return pallo\library\system\file\File
+     */
+    protected function getNodeFile($node) {
+        $rootNodeId = $node->getRootNodeId();
+        $nodeId = $node->getId();
+
+        return $this->path->getChild($rootNodeId . '/' . $nodeId . '.ini');
+    }
+
+}

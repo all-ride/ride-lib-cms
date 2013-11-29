@@ -1,0 +1,25 @@
+{
+    "name": "pallo/lib-cms",
+    "description": "CMS library of the Pallo framework",
+    "license": "MIT",
+    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "Joris Vandeweerd",
+            "email": "joris@statik.be"
+        }
+    ],
+    "require": {
+        "pallo/lib-common": ">=0.3.1",
+        "pallo/lib-config": ">=0.2.3",
+        "pallo/lib-reflection": ">=0.4.0",
+        "pallo/lib-template": ">=0.2.0",
+        "pallo/lib-system": ">=0.3.1",
+        "pallo/lib-widget": ">=0.1.1"
+    },
+    "autoload": {
+        "psr-0": {
+            "pallo\\library\\cms\\": ["src/", "test/src/"]
+        }
+    }
+}
