@@ -63,6 +63,40 @@ class ExpiredRouteModel {
     }
 
     /**
+     * Removes the expired routes for a path
+     * @param string $path Path to remove
+     * @return null
+     */
+    public function removeExpiredRoutesByPath($path) {
+        $this->getExpiredRoutes();
+
+        foreach ($this->routes as $index => $route) {
+            if ($route->getPath() == $path) {
+                unset($this->routes[$index]);
+            }
+        }
+
+        $this->io->setExpiredRoutes($this->routes);
+    }
+
+    /**
+     * Removes the expired routes for a node
+     * @param string $node Id of the node
+     * @return null
+     */
+    public function removeExpiredRoutesByNode($node) {
+        $this->getExpiredRoutes();
+
+        foreach ($this->routes as $index => $route) {
+            if ($route->getNode() == $node) {
+                unset($this->routes[$index]);
+            }
+        }
+
+        $this->io->setExpiredRoutes($this->routes);
+    }
+
+    /**
      * Gets all the expired routes
      * @return array Array with a ExpiredRoute object as value
      */
