@@ -448,7 +448,7 @@ class Node {
             if (isset($this->properties[$key])) {
                 // value is set, unset it
                 unset($this->properties[$key]);
-            } elseif ($this->parentNode->get($key, null, true, true) !== null) {
+            } elseif ($this->parentNode && $this->parentNode->get($key, null, true, true) !== null) {
                 // value is set on parent node, override it with empty value
                 $this->setProperty(new NodeProperty($key, $value, $defaultInherit));
             }
