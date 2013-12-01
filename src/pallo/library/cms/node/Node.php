@@ -448,7 +448,7 @@ class Node {
             if (isset($this->properties[$key])) {
                 // value is set, unset it
                 unset($this->properties[$key]);
-            } elseif ($this->parentNode->get($key, null, true, true) !== null) {
+            } elseif ($this->parentNode && $this->parentNode->get($key, null, true, true) !== null) {
                 // value is set on parent node, override it with empty value
                 $this->setProperty(new NodeProperty($key, $value, $defaultInherit));
             }
@@ -546,9 +546,9 @@ class Node {
             }
         }
 
-        foreach ($this->properties as $key => $value) {
+        foreach ($this->properties as $key => $property) {
             if ($key == self::PROPERTY_NAME || strpos($key, self::PROPERTY_NAME . '.') === 0) {
-                return $value->getValue();
+                return $property->getValue();
             }
         }
 
@@ -580,6 +580,26 @@ class Node {
         }
 
         return $route;
+    }
+
+    /**
+     * Gets the set routes of this node
+     * @return array Array with the locale code as key and the route as value
+     */
+    public function getRoutes() {
+        $routes = array();
+
+        $prefixLength = strlen(self::PROPERTY_ROUTE . '.');
+
+        foreach ($this->properties as $key => $property) {
+            if (strpos($key, self::PROPERTY_ROUTE . '.') !== 0) {
+                continue;
+            }
+
+            $routes[substr($key, $prefixLength)] = $property->getValue();
+        }
+
+        return $routes;
     }
 
     /**

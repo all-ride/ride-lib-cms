@@ -559,7 +559,7 @@ class NodeModel {
             $parent = $parent->getParentNode();
         }
 
-        array_reverse($urls, true);
+        $urls = array_reverse($urls, true);
 
         return $urls;
     }

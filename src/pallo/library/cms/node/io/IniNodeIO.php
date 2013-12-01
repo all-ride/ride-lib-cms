@@ -2,6 +2,7 @@
 
 namespace pallo\library\cms\node\io;
 
+use pallo\library\cms\expired\ExpiredRouteModel;
 use pallo\library\cms\exception\CmsException;
 use pallo\library\cms\node\Node;
 use pallo\library\cms\node\NodeProperty;
@@ -40,27 +41,36 @@ class IniNodeIO extends AbstractNodeIO {
     const PROPERTY_ORDER = 'order';
 
     /**
-     * Instance of the config helper
-     * @var pallo\library\config\ConfigHelper
-     */
-    protected $configHelper;
-
-    /**
      * Path for the node files
      * @var pallo\library\system\file\File
      */
     protected $path;
 
     /**
+     * Instance of the config helper
+     * @var pallo\library\config\ConfigHelper
+     */
+    protected $configHelper;
+
+    /**
+     * Instance of the expired route model
+     * @var pallo\library\cms\expired\ExpiredRouteModel
+     */
+    protected $expiredRouteModel;
+
+    /**
      * Constructs a new ini node IO
      * @param pallo\library\system\file\File $path Path for the data files
      * @param pallo\library\config\ConfigHelper $configHelper Instance of the
      * configuration helper
+     * @param pallo\library\cms\expired\ExpiredRouteModel $expiredRouteModel
+     * Instance of the expired route model
      * @return null
      */
-    public function __construct(File $path, ConfigHelper $configHelper) {
+    public function __construct(File $path, ConfigHelper $configHelper, ExpiredRouteModel $expiredRouteModel) {
         $this->path = $path;
         $this->configHelper = $configHelper;
+        $this->expiredRouteModel = $expiredRouteModel;
     }
 
     /**
@@ -120,7 +130,7 @@ class IniNodeIO extends AbstractNodeIO {
     /**
      * Gets a node from a INI string
      * @param string $ini
-     * @return joppa\model\node\Node
+     * @return pallo\library\cms\node\Node
      */
     protected function getNodeFromIni($ini) {
         $ini = $this->parseIni($ini);
@@ -198,11 +208,45 @@ class IniNodeIO extends AbstractNodeIO {
         $contents = $this->getIniFromNode($node);
 
         $nodeFile = $this->getNodeFile($node);
+        if ($nodeFile->exists()) {
+            $this->handleExpiredRoutes($nodeFile, $node);
+        }
 
         $nodeFile->getParent()->create();
         $nodeFile->write($contents);
 
         // @todo clear cache
+    }
+
+    /**
+     * Handles the expired routes
+     * @param pallo\library\system\file\File $nodeFile
+     * @param pallo\library\cms\node\Node $node
+     * @return null
+     */
+    protected function handleExpiredRoutes(File $nodeFile, Node $node) {
+        $ini = $nodeFile->read();
+        $oldNode = $this->getNodeFromIni($ini);
+        $oldRoutes = $oldNode->getRoutes();
+
+        $routes = $node->getRoutes();
+
+        $locales = array_keys($oldRoutes + $routes);
+        foreach ($locales as $locale) {
+            $routeSet = isset($routes[$locale]);
+            $oldRouteSet = isset($oldRoutes[$locale]);
+
+            if ($routeSet && $oldRouteSet) {
+                if ($routes[$locale] == $oldRoutes[$locale]) {
+                    continue;
+                }
+
+                $this->expiredRouteModel->removeExpiredRoutesByPath($routes[$locale]);
+                $this->expiredRouteModel->addExpiredRoute($node->getId(), $locale, $oldRoutes[$locale], $node->getRootNode()->getBaseUrl($locale));
+            } elseif (!$routeSet && $oldRouteSet) {
+                $this->expiredRouteModel->addExpiredRoute($node->getId(), $locale, $oldRoutes[$locale], $node->getRootNode()->getBaseUrl($locale));
+            }
+        }
     }
 
     /**
@@ -242,6 +286,8 @@ class IniNodeIO extends AbstractNodeIO {
         }
 
         $nodeFile->delete();
+
+        $this->expiredRouteModel->removeExpiredRoutesByNode($nodeId);
 
         // @todo clear cache
     }
