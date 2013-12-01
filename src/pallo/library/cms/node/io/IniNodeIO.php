@@ -81,7 +81,7 @@ class IniNodeIO extends AbstractNodeIO {
         $this->nodes = array();
 
         if (!$this->path->exists()) {
-            return $nodes;
+            return $this->nodes;
         }
 
         $directories = $this->path->read();
