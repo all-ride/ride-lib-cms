@@ -62,10 +62,16 @@ class Node {
     const PROPERTY_NAME = 'name';
 
     /**
-     * Property key for the permissions
+     * Property key for the hide in menu flag
      * @var string
      */
-    const PROPERTY_PERMISSIONS = 'permissions';
+    const PROPERTY_HIDE_MENU = 'hide.menu';
+
+    /**
+     * Property key for the hide in breadcrumbs flag
+     * @var string
+     */
+    const PROPERTY_HIDE_BREADCRUMBS = 'hide.breadcrumbs';
 
     /**
      * Property key for the publish flag
@@ -617,6 +623,38 @@ class Node {
      */
     public function getTheme() {
         return $this->get(self::PROPERTY_THEME);
+    }
+
+    /**
+     * Sets whether to hide this node in the breadcrumbs
+     * @return boolean
+     */
+    public function setHideInBreadcrumbs($flag) {
+        $this->set(self::PROPERTY_HIDE_BREADCRUMBS, $flag ? 1 : 0);
+    }
+
+    /**
+     * Gets whether to hide this node in the breadcrumbs
+     * @return boolean
+     */
+    public function hideInBreadcrumbs() {
+        return $this->get(self::PROPERTY_HIDE_BREADCRUMBS);
+    }
+
+    /**
+     * Sets whether to hide this node in the menu
+     * @return boolean
+     */
+    public function setHideInMenu($flag) {
+        $this->set(self::PROPERTY_HIDE_MENU, $flag ? 1 : 0);
+    }
+
+    /**
+     * Gets whether to hide this node in the menu
+     * @return boolean
+     */
+    public function hideInMenu() {
+        return $this->get(self::PROPERTY_HIDE_MENU);
     }
 
     /**
