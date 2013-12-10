@@ -544,14 +544,16 @@ class NodeModel {
      * @return array Array with the URL as key and the node name as value
      */
     public function getBreadcrumbsForNode(Node $node, $baseScript, $locale) {
-        $urls = array(
-            $baseScript . $node->getRoute($locale) => $node->getName($locale),
-        );
+        $urls = array();
+
+        if (!$node->hideInBreadcrumbs()) {
+            $urls[$baseScript . $node->getRoute($locale)] = $node->getName($locale);
+        }
 
         $parent = $node->getParentNode();
         while ($parent) {
             $nodeType = $this->nodeTypeManager->getNodeType($parent->getType());
-            if ($nodeType->getFrontendCallback()) {
+            if ($nodeType->getFrontendCallback() && !$parent->hideInBreadcrumbs()) {
                 $url = $baseScript . $parent->getRoute($locale);
                 $urls[$url] = $parent->getName($locale);
             }
