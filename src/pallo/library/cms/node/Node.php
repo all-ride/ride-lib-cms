@@ -722,7 +722,7 @@ class Node {
             return self::LOCALES_ALL;
         }
 
-        $locales = explode(self::LIST_SEPARATOR, $availableLocales);
+        $locales = explode(NodeProperty::LIST_SEPARATOR, $availableLocales);
 
         $availableLocales = array();
         foreach ($locales as $locale) {
