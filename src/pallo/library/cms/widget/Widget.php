@@ -59,4 +59,17 @@ interface Widget extends LibraryWidget {
      */
     public function containsUserContent();
 
+    /**
+     * Sets the context of the node
+     * @param array $context
+     * @return null
+     */
+    public function setContext(array $context);
+
+    /**
+     * Gets the context of the node
+     * @return array
+     */
+    public function getContext();
+
 }
