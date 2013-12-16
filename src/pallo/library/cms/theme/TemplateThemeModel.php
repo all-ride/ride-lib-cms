@@ -5,10 +5,15 @@ namespace pallo\library\cms\theme;
 use pallo\library\template\theme\ThemeModel as LibraryThemeModel;
 
 /**
- * Interface for a predefined page layout
+ * Filters CMS themes from the template theme model
  */
 class TemplateThemeModel implements ThemeModel {
 
+    /**
+     * Constructs a new theme model
+     * @param pallo\library\template\theme\ThemeModel $model
+     * @return null
+     */
     public function __construct(LibraryThemeModel $model) {
         $this->model = $model;
     }
