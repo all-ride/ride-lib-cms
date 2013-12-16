@@ -10,13 +10,19 @@ use pallo\library\template\theme\Theme as TemplateTheme;
 interface Theme extends TemplateTheme {
 
     /**
-     * Checks if a region exists in this layout
+     * Gets the display name of this theme
+     * @return string
+     */
+    public function getDisplayName();
+
+    /**
+     * Checks if a region exists in this theme
      * @return boolean
      */
     public function hasRegion($region);
 
     /**
-     * Gets the regions for this theme
+     * Gets the regions of this theme
      * @return array Array with the region name as key and as value
      */
     public function getRegions();
