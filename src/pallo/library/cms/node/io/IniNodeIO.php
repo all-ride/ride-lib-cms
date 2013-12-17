@@ -285,7 +285,9 @@ class IniNodeIO extends AbstractNodeIO {
             $nodeFile = $this->getNodeFile($node);
         }
 
-        $nodeFile->delete();
+        if ($nodeFile->exists()) {
+            $nodeFile->delete();
+        }
 
         $this->expiredRouteModel->removeExpiredRoutesByNode($nodeId);
 
