@@ -2,7 +2,7 @@
     "name": "pallo/lib-cms",
     "description": "CMS library of the Pallo framework",
     "license": "MIT",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "authors": [
         {
             "name": "Joris Vandeweerd",
@@ -15,11 +15,15 @@
         "pallo/lib-reflection": ">=0.4.0",
         "pallo/lib-template": ">=0.2.0",
         "pallo/lib-system": ">=0.3.1",
-        "pallo/lib-widget": ">=0.1.1"
+        "pallo/lib-widget": ">=0.1.1",
+        "simple-html-dom/simple-html-dom": "*"
     },
     "autoload": {
         "psr-0": {
-            "pallo\\library\\cms\\": ["src/", "test/src/"]
-        }
+            "pallo\\library\\cms\\": ["src/"]
+        },
+        "classmap": [
+            "vendor/simple-html-dom/simple-html-dom/"
+        ]
     }
 }
