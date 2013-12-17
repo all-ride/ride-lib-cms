@@ -23,7 +23,7 @@
             "pallo\\library\\cms\\": ["src/"]
         },
         "classmap": [
-            "vendor/simple-html-dom/simple-html-dom/"
+            "../../simple-html-dom/simple-html-dom/"
         ]
     }
 }
