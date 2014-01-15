@@ -6,7 +6,7 @@ use pallo\library\cms\node\SiteNode;
 use pallo\library\cms\exception\CmsException;
 
 /**
- * Implementation of the page node type
+ * Implementation of the site node type
  */
 class SiteNodeType extends AbstractNodeType {
 
@@ -23,8 +23,8 @@ class SiteNodeType extends AbstractNodeType {
     protected $defaultTheme;
 
     /**
-     * Sets the default theme of a new node
-     * @param string $defaultTheme
+     * Sets the default theme of a new site node
+     * @param string|null $defaultTheme Machine name of the theme
      * @return null
      */
     public function setDefaultTheme($defaultTheme) {
@@ -33,6 +33,14 @@ class SiteNodeType extends AbstractNodeType {
         }
 
         $this->defaultTheme = $defaultTheme;
+    }
+
+    /**
+     * Gets the default theme of a new site node
+     * @return string|null Machine name of the theme
+     */
+    public function getDefaultTheme() {
+        return $this->defaultTheme;
     }
 
     /**
