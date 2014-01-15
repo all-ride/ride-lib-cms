@@ -196,7 +196,7 @@ class TextParser {
     protected function replaceUrls(array $elements, $attribute) {
         foreach ($elements as $element) {
             $url = substr($element->$attribute, 0, 7);
-            if ($url{0} == '#' || $url == 'http://' || $url == 'https:/') {
+            if ($url{0} == '#' || $url == 'http://' || $url == 'https:/' || ($url{0} == '/' && $url{1} == '/')) {
                 continue;
             }
 
