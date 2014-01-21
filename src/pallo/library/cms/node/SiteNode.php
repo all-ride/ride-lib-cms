@@ -109,7 +109,10 @@ class SiteNode extends Node {
      * @return integer Id of the new widget instance
      */
     public function createWidget($widgetId) {
-        $instanceId = count($this->widgets) + 1;
+        $instanceId = 0;
+        do {
+            $instanceId++;
+        } while (isset($this->properties[self::PROPERTY_WIDGET . '.' . $instanceId]));
 
         $this->set(self::PROPERTY_WIDGET . '.' . $instanceId, $widgetId, true);
         $this->widgets[$instanceId] = $widgetId;

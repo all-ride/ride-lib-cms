@@ -774,7 +774,7 @@ class Node {
         } else {
             $index = 0;
             foreach ($this->properties as $key => $property) {
-                if (strpos($key, $prefix) === 0) {
+                if (strpos($key, $prefix) !== 0) {
                     continue;
                 }
 
