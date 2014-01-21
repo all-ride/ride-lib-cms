@@ -749,24 +749,72 @@ class Node {
     }
 
     /**
-     * Sets a meta field
+     * Sets a meta property
      * @param string $locale Code of the locale
-     * @param string $name Name of the meta
-     * @param string $value Value for the meta
+     * @param string $name Name of the meta property
+     * @param string $value Value for the meta property
      * @return null
      */
-    public function setMeta($locale, $name, $value) {
-        $this->set(self::PROPERTY_META . '.' . $locale . '.' . $name, $value);
+    public function setMeta($locale, $name, $value = null) {
+        $prefix = self::PROPERTY_META . '.' . $locale . '.';
+
+        if (is_array($name)) {
+            foreach ($this->properties as $key => $property) {
+                if (strpos($key, $prefix) === 0) {
+                    unset($this->properties[$key]);
+                }
+            }
+
+            $index = 0;
+            foreach ($name as $property => $content) {
+                $this->set($prefix . $index, $property . ' ' . $content);
+
+                $index++;
+            }
+        } else {
+            $index = 0;
+            foreach ($this->properties as $key => $property) {
+                if (strpos($key, $prefix) !== 0) {
+                    continue;
+                }
+
+                $metaIndex = substr($key, strlen($prefix));
+
+                $index = max($index, $metaIndex) + 1;
+            }
+
+            $this->set($prefix . $index, $name . ' ' . $value);
+        }
     }
 
     /**
-     * Gets a meta field
+     * Gets a meta property
      * @param string $locale Code of the locale
-     * @param string $name Name of the meta
-     * @return string Value for the meta
+     * @param string $name Name of the meta property
+     * @return string|array Value of the property when a name has been
+     * provided, all the meta properties in an array otherwise
      */
-    public function getMeta($locale, $name) {
-        return $this->get(self::PROPERTY_META . '.' . $locale . '.' . $name);
+    public function getMeta($locale, $name = null) {
+        $prefix = self::PROPERTY_META . '.' . $locale . '.';
+
+        if ($name !== null) {
+            return $this->get($prefix . $name);
+        }
+
+        $prefixLength = strlen($prefix);
+
+        $meta = array();
+        foreach ($this->properties as $key => $property) {
+            if (strpos($key, $prefix) !== 0) {
+                continue;
+            }
+
+            list($property, $content) = explode(' ', $property->getValue(), 2);
+
+            $meta[$property] = $content;
+        }
+
+        return $meta;
     }
 
     /**

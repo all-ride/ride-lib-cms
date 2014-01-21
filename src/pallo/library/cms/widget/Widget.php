@@ -60,16 +60,21 @@ interface Widget extends LibraryWidget {
     public function containsUserContent();
 
     /**
-     * Sets the context of the node
-     * @param array $context
+     * Sets context to the widget
+     * @param string|array $context Name of the context variable or an array
+     * of key-value pairs
+     * @param mixed $value Context value
      * @return null
      */
-    public function setContext(array $context);
+    public function setContext($context, $value = null);
 
     /**
-     * Gets the context of the node
-     * @return array
+     * Gets context from the widget
+     * @param string $name Name of the context variable
+     * @param mixed $default Default value for when the variable is not set
+     * @return mixed Full context if no arguments provided, value of the
+     * variable if set in the context, provided default value otherwise
      */
-    public function getContext();
+    public function getContext($name = null, $default = null);
 
 }
