@@ -40,6 +40,12 @@ class SiteNode extends Node {
     protected $widgets;
 
     /**
+     * Offset for the instance id of a new widget
+     * @var integer
+     */
+    protected $widgetIdOffset;
+
+    /**
      * Constructs a new site node
      * @return null
      */
@@ -109,7 +115,7 @@ class SiteNode extends Node {
      * @return integer Id of the new widget instance
      */
     public function createWidget($widgetId) {
-        $instanceId = 0;
+        $instanceId = $this->getWidgetIdOffset();
         do {
             $instanceId++;
         } while (isset($this->properties[self::PROPERTY_WIDGET . '.' . $instanceId]));
@@ -118,6 +124,27 @@ class SiteNode extends Node {
         $this->widgets[$instanceId] = $widgetId;
 
         return $instanceId;
+    }
+
+    /**
+     * Sets the offset for the widget id of a new widget instance
+     * @param integer $widgetIdOffset
+     * @return null
+     */
+    public function setWidgetIdOffset($widgetIdOffset) {
+        $this->widgetIdOffset = $widgetIdOffset;
+    }
+
+    /**
+     * Gets the offset for the widget id of a new widget instance
+     * @return integer
+     */
+    public function getWidgetIdOffset() {
+        if ($this->widgetIdOffset) {
+            return $this->widgetIdOffset;
+        }
+
+        return 0;
     }
 
     /**
@@ -138,6 +165,7 @@ class SiteNode extends Node {
     public function setAvailableWidgets(array $widgets) {
         $this->widgets = $widgets;
     }
+
 
     /**
      * Get the route of this node. The route is used in the frontend as an url
