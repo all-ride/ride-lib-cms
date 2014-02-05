@@ -59,6 +59,12 @@ class IniNodeIO extends AbstractNodeIO {
     protected $expiredRouteModel;
 
     /**
+     * Offset for the instance id of a new widget
+     * @var integer
+     */
+    protected $widgetIdOffset;
+
+    /**
      * Constructs a new ini node IO
      * @param pallo\library\system\file\File $path Path for the data files
      * @param pallo\library\config\ConfigHelper $configHelper Instance of the
@@ -71,6 +77,15 @@ class IniNodeIO extends AbstractNodeIO {
         $this->path = $path;
         $this->configHelper = $configHelper;
         $this->expiredRouteModel = $expiredRouteModel;
+    }
+
+    /**
+     * Sets the offset for the widget id of a new widget instance
+     * @param integer $widgetIdOffset
+     * @return null
+     */
+    public function setWidgetIdOffset($widgetIdOffset) {
+        $this->widgetIdOffset = $widgetIdOffset;
     }
 
     /**
@@ -111,6 +126,9 @@ class IniNodeIO extends AbstractNodeIO {
         foreach ($this->nodes as $node) {
             $parentId = $node->getParentNodeId();
             if (!$parentId) {
+                // site node
+                $node->setWidgetIdOffset($this->widgetIdOffset);
+
                 continue;
             }
 
