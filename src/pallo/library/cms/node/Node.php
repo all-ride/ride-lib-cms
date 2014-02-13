@@ -767,7 +767,7 @@ class Node {
 
             $index = 0;
             foreach ($name as $property => $content) {
-                $this->set($prefix . $index, $property . ' ' . $content);
+                $this->set($prefix . $index, $property . '=' . $content);
 
                 $index++;
             }
@@ -783,7 +783,7 @@ class Node {
                 $index = max($index, $metaIndex) + 1;
             }
 
-            $this->set($prefix . $index, $name . ' ' . $value);
+            $this->set($prefix . $index, $name . '=' . $value);
         }
     }
 
@@ -796,11 +796,6 @@ class Node {
      */
     public function getMeta($locale, $name = null) {
         $prefix = self::PROPERTY_META . '.' . $locale . '.';
-
-        if ($name !== null) {
-            return $this->get($prefix . $name);
-        }
-
         $prefixLength = strlen($prefix);
 
         $meta = array();
@@ -809,7 +804,10 @@ class Node {
                 continue;
             }
 
-            list($property, $content) = explode(' ', $property->getValue(), 2);
+            list($property, $content) = explode('=', $property->getValue(), 2);
+            if ($property === $name) {
+                return $content;
+            }
 
             $meta[$property] = $content;
         }
