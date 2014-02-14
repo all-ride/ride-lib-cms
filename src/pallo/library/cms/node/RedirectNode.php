@@ -66,7 +66,7 @@ class RedirectNode extends Node {
      * @return string|null The id of the node
      */
     public function getRedirectNode($locale) {
-        return $this->get(self::PROPERTY_URL . '.' . $locale);
+        return $this->get(self::PROPERTY_NODE . '.' . $locale);
     }
 
 }
