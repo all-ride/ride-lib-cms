@@ -63,7 +63,7 @@ class Content {
      * @return null
      */
     public function __construct($type, $title, $url = null, $teaser = null, $image = null, $date = null, $data = null) {
-        $this->setTitle($type);
+        $this->setType($type);
         $this->setTitle($title);
 
         $this->url = $url;
