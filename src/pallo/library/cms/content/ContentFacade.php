@@ -56,26 +56,30 @@ class ContentFacade {
      * found
 	 */
 	public function getContentMapper($type) {
-		if (isset($this->mappers[$type])) {
-    		return $this->mappers[$type];
-		}
+        if (!$type || !is_string($type)) {
+            throw new CmsException('Could not get content mapper: provided type is empty or not a string');
+        }
 
-	    foreach ($this->io as $io) {
-	        $mapper = $io->getContentMapper($type);
-	        if (!$mapper) {
-	            continue;
-	        }
+        if (isset($this->mappers[$type])) {
+            return $this->mappers[$type];
+        }
 
-		    $mapper->setBaseUrl($this->baseUrl);
-		    $mapper->setBaseScript($this->baseScript);
+        foreach ($this->io as $io) {
+            $mapper = $io->getContentMapper($type);
+            if (!$mapper) {
+                continue;
+            }
 
-		    $this->mappers[$type] = $mapper;
+            $mapper->setBaseUrl($this->baseUrl);
+            $mapper->setBaseScript($this->baseScript);
 
-		    return $mapper;
-	    }
+            $this->mappers[$type] = $mapper;
 
-		throw new CmsException('Could not get content mapper for ' . $type . ': no content mapper set for this type');
-	}
+            return $mapper;
+        }
+
+        throw new CmsException('Could not get content mapper for ' . $type . ': no content mapper set for this type');
+    }
 
 	/**
 	 * Gets all the available mappers

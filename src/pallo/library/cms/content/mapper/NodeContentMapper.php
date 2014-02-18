@@ -1,6 +1,6 @@
 <?php
 
-namespace joppa\model\content\mapper;
+namespace pallo\library\cms\content\mapper;
 
 use pallo\library\cms\content\Content;
 use pallo\library\cms\node\Node;
