@@ -765,25 +765,11 @@ class Node {
                 }
             }
 
-            $index = 0;
             foreach ($name as $property => $content) {
-                $this->set($prefix . $index, $property . '=' . $content);
-
-                $index++;
+                $this->set($prefix . $property, $content);
             }
         } else {
-            $index = 0;
-            foreach ($this->properties as $key => $property) {
-                if (strpos($key, $prefix) !== 0) {
-                    continue;
-                }
-
-                $metaIndex = substr($key, strlen($prefix));
-
-                $index = max($index, $metaIndex) + 1;
-            }
-
-            $this->set($prefix . $index, $name . '=' . $value);
+            $this->set($prefix . $name, $value);
         }
     }
 
@@ -791,25 +777,32 @@ class Node {
      * Gets a meta property
      * @param string $locale Code of the locale
      * @param string $name Name of the meta property
+     * @param boolean $inherited
      * @return string|array Value of the property when a name has been
      * provided, all the meta properties in an array otherwise
      */
-    public function getMeta($locale, $name = null) {
+    public function getMeta($locale, $name = null, $inherited = true) {
         $prefix = self::PROPERTY_META . '.' . $locale . '.';
+
+        if ($name) {
+            return $this->get($prefix . $name, null, $inherited);
+        }
+
         $prefixLength = strlen($prefix);
 
-        $meta = array();
+        $parentNode = $this->getParentNode();
+        if ($inherited && $parentNode) {
+            $meta = $parentNode->getMeta($locale, null, true);
+        } else {
+            $meta = array();
+        }
+
         foreach ($this->properties as $key => $property) {
             if (strpos($key, $prefix) !== 0) {
                 continue;
             }
 
-            list($property, $content) = explode('=', $property->getValue(), 2);
-            if ($property === $name) {
-                return $content;
-            }
-
-            $meta[$property] = $content;
+            $meta[str_replace($prefix, '', $key)] = $property->getValue();
         }
 
         return $meta;
