@@ -1,3 +1,3 @@
-# Pallo: CMS Library
+# Ride: CMS Library
 
-CMS library of the PHP Pallo framework.
+CMS library of the PHP Ride framework.
