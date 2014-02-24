@@ -2,6 +2,7 @@
 
 namespace ride\library\cms\content;
 
+use ride\library\cms\exception\CmsException;
 use ride\library\cms\node\exception\NodeNotFoundException;
 use ride\library\cms\node\NodeModel;
 use ride\library\cms\node\Node;
@@ -138,12 +139,13 @@ class TextParser {
 
                 		break;
                 	default:
-                		throw new CmsException($variableName . ' is not a supported CMS variable. Try name of url');
+                		throw new CmsException($tokens[2] . ' is not a supported CMS variable. Try name of url');
                 }
 
                 break;
             case 'site':
                 if (count($tokens) < 2) {
+                    return $matches[0];
                 }
 
                 switch ($tokens[1]) {
@@ -154,7 +156,7 @@ class TextParser {
                     case self::VARIABLE_URL:
                         return str_replace('index.php', '', $this->baseScript);
                 	default:
-                		throw new CmsException($variablename . ' is not a supported cms variable. try name of url');
+                		throw new CmsException($tokens[1] . ' is not a supported cms variable. try name of url');
                 }
 
                 break;
