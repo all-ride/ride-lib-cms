@@ -66,10 +66,10 @@ class IniNodeIO extends AbstractNodeIO {
 
     /**
      * Constructs a new ini node IO
-     * @param ride\library\system\file\File $path Path for the data files
-     * @param ride\library\config\ConfigHelper $configHelper Instance of the
+     * @param \ride\library\system\file\File $path Path for the data files
+     * @param \ride\library\config\ConfigHelper $configHelper Instance of the
      * configuration helper
-     * @param ride\library\cms\expired\ExpiredRouteModel $expiredRouteModel
+     * @param \ride\library\cms\expired\ExpiredRouteModel $expiredRouteModel
      * Instance of the expired route model
      * @return null
      */
@@ -77,6 +77,14 @@ class IniNodeIO extends AbstractNodeIO {
         $this->path = $path;
         $this->configHelper = $configHelper;
         $this->expiredRouteModel = $expiredRouteModel;
+    }
+
+    /**
+     * Gets the path for the data files
+     * @return \ride\library\system\file\File
+     */
+    public function getPath() {
+        return $this->path;
     }
 
     /**
@@ -308,8 +316,6 @@ class IniNodeIO extends AbstractNodeIO {
         }
 
         $this->expiredRouteModel->removeExpiredRoutesByNode($nodeId);
-
-        // @todo clear cache
     }
 
     /**

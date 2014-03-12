@@ -7,12 +7,24 @@ use ride\library\cms\node\io\NodeIO;
 use ride\library\cms\node\type\NodeTypeManager;
 use ride\library\cms\node\validator\NodeValidator;
 use ride\library\cms\node\NodeProperty;
-use ride\library\String;
+use ride\library\event\EventManager;
 
 /**
  * Model for the nodes
  */
 class NodeModel {
+
+    /**
+     * Name of the event when a node is being deleted
+     * @var string
+     */
+    const EVENT_NODE_REMOVE = 'cms.node.remove';
+
+    /**
+     * Name of the event when a node is being saved
+     * @var string
+     */
+    const EVENT_NODE_SAVE = 'cms.node.save';
 
     /**
      * Facade of the node types
@@ -33,9 +45,15 @@ class NodeModel {
     protected $validator;
 
     /**
+     * Instance of the event manager
+     * @var ride\library\event\EventManager
+     */
+    protected $eventManager;
+
+    /**
      * Creates a new node model
-     * @param joppa\model\node\type\NodeTypeManager $nodeTypeManager
-     * @param joppa\model\node\io\NodeIO $io
+     * @param \ride\library\cms\node\type\NodeTypeManager $nodeTypeManager
+     * @param \ride\library\cms\node\io\NodeIO $io
      * @return null
      */
     public function __construct(NodeTypeManager $nodeTypeManager, NodeIO $io, NodeValidator $validator) {
@@ -44,6 +62,15 @@ class NodeModel {
         $this->nodeTypeManager = $nodeTypeManager;
         $this->io = $io;
         $this->validator = $validator;
+    }
+
+    /**
+     * Sets the event manager to the node model
+     * @param \ride\library\event\EventManager $eventManager
+     * @return null
+     */
+    public function setEventManager(EventManager $eventManager) {
+        $this->eventManager = $eventManager;
     }
 
     /**
@@ -182,7 +209,6 @@ class NodeModel {
     public function createNode($type, $parentNodeId = null) {
         $node = $this->nodeTypeManager->getNodeType($type)->createNode();
 
-        $parent = null;
         if ($parentNodeId) {
             $node->setParentNode($this->getNode($parentNodeId));
         }
@@ -215,6 +241,10 @@ class NodeModel {
         $this->validateNode($node);
 
         $this->io->setNode($node);
+
+        if ($this->eventManager) {
+            $this->eventManager->triggerEvent(self::EVENT_NODE_SAVE, array('nodes' => array($node)));
+        }
     }
 
     /**
@@ -225,6 +255,10 @@ class NodeModel {
      */
     public function removeNode(Node $node, $recursive = true) {
         $this->io->removeNode($node, $recursive);
+
+        if ($this->eventManager) {
+            $this->eventManager->triggerEvent(self::EVENT_NODE_REMOVE, array('nodes' => array($node)));
+        }
     }
 
     /**
@@ -533,6 +567,10 @@ class NodeModel {
 
         foreach ($saveNodes as $node) {
             $this->io->setNode($node);
+        }
+
+        if ($this->eventManager) {
+            $this->eventManager->triggerEvent(self::EVENT_NODE_SAVE, array('nodes' => $saveNodes));
         }
     }
 
