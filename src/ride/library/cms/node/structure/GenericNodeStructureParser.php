@@ -134,7 +134,7 @@ class GenericNodeStructureParser implements NodeStructureParser {
             $node->setRoute($locale, $nodeArray['route']);
         }
 
-        $nodeModel->setNode($node);
+        $nodeModel->setNode($node, 'Updated structure of ' . $site->getName());
 
         return $node;
     }
