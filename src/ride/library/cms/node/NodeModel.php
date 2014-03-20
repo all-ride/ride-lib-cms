@@ -15,16 +15,16 @@ use ride\library\event\EventManager;
 class NodeModel {
 
     /**
-     * Name of the event when a node is being deleted
+     * Name of the event before a node is being saved or removed
      * @var string
      */
-    const EVENT_NODE_REMOVE = 'cms.node.remove';
+    const EVENT_PRE_ACTION = 'cms.node.action.pre';
 
     /**
-     * Name of the event when a node is being saved
+     * Name of the event after a node is being saved or removed
      * @var string
      */
-    const EVENT_NODE_SAVE = 'cms.node.save';
+    const EVENT_POST_ACTION = 'cms.node.action.post';
 
     /**
      * Facade of the node types
@@ -235,15 +235,30 @@ class NodeModel {
     /**
      * Saves a node to the data source
      * @param Node $node
+     * @param string $description Description of the save action
      * @return null
      */
-    public function setNode(Node $node) {
+    public function setNode(Node $node, $description = null) {
         $this->validateNode($node);
+
+        if ($this->eventManager) {
+            if (!$description) {
+                $description = 'Saved node ' . $node->getName();
+            }
+
+            $eventArguments = array(
+                'action' => 'save',
+                'nodes' => array($node),
+                'description' => $description,
+            );
+
+            $this->eventManager->triggerEvent(self::EVENT_PRE_ACTION, $eventArguments);
+        }
 
         $this->io->setNode($node);
 
         if ($this->eventManager) {
-            $this->eventManager->triggerEvent(self::EVENT_NODE_SAVE, array('nodes' => array($node)));
+            $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
         }
     }
 
@@ -251,13 +266,28 @@ class NodeModel {
      * Removes a node
      * @param ride\library\cms\node\Node $node Node to remove
      * @param boolean $recursive Flag to see if child nodes should be deleted
+     * @param string $description Description of the remove action
      * @return
      */
-    public function removeNode(Node $node, $recursive = true) {
+    public function removeNode(Node $node, $recursive = true, $description = null) {
+        if ($this->eventManager) {
+            if (!$description) {
+                $description = 'Removed node ' . $node->getName();
+            }
+
+            $eventArguments = array(
+                'action' => 'remove',
+                'nodes' => array($node),
+                'description' => $description,
+            );
+
+            $this->eventManager->triggerEvent(self::EVENT_PRE_ACTION, $eventArguments);
+        }
+
         $this->io->removeNode($node, $recursive);
 
         if ($this->eventManager) {
-            $this->eventManager->triggerEvent(self::EVENT_NODE_REMOVE, array('nodes' => array($node)));
+            $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
         }
     }
 
@@ -315,7 +345,7 @@ class NodeModel {
 
     	$this->cloneNodeProperties($node, $clone, $keepOriginalName, $cloneRoutes);
 
-    	$this->setNode($clone);
+    	$this->setNode($clone, 'Cloned ' . $node->getName());
 
     	if ($reorder) {
     	    // reorder the siblings after the original node
@@ -330,7 +360,7 @@ class NodeModel {
 
     	        $sibling->setOrderIndex($siblingOrderIndex + 1);
 
-    	        $this->io->setNode($sibling);
+    	        $this->setNode($sibling, 'Reordered ' . $sibling->getName() . ' after clone of ' . $node->getName());
     	    }
     	}
 
@@ -369,7 +399,7 @@ class NodeModel {
     	        }
 
     	        if ($hasChanged) {
-    	            $this->io->setNode($node);
+    	            $this->setNode($node, "Updated node references for clone of " . $node->getName());
     	        }
     	    }
 
@@ -377,7 +407,7 @@ class NodeModel {
     	}
 
     	// save the root for newly created widgets
-    	$this->setNode($clone->getRootNode());
+    	$this->setNode($clone->getRootNode(), 'Updated widgets for clone of ' . $node->getName());
 
     	return $clone;
     }
@@ -565,12 +595,22 @@ class NodeModel {
             throw new CmsException('Could not order the nodes: not all nodes of the provided parent are provided in the node order array; missing nodes ' . implode(', ', array_keys($nodes)));
         }
 
+        if ($this->eventManager) {
+            $eventArguments = array(
+                'action' => 'order',
+                'nodes' => $saveNodes,
+                'description' => 'Reordering nodes',
+            );
+
+            $this->eventManager->triggerEvent(self::EVENT_PRE_ACTION, $eventArguments);
+        }
+
         foreach ($saveNodes as $node) {
             $this->io->setNode($node);
         }
 
         if ($this->eventManager) {
-            $this->eventManager->triggerEvent(self::EVENT_NODE_SAVE, array('nodes' => $saveNodes));
+            $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
         }
     }
 
