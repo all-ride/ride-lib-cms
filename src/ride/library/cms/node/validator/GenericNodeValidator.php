@@ -18,10 +18,10 @@ class GenericNodeValidator implements NodeValidator {
 
     /**
      * Validates the node properties
-     * @param ride\library\cms\node\Node $node Node to be validated
-     * @param ride\library\cms\node\NodeModel $nodeModel Model of the nodes
+     * @param \ride\library\cms\node\Node $node Node to be validated
+     * @param \ride\library\cms\node\NodeModel $nodeModel Model of the nodes
      * @return null
-     * @throws ride\library\validation\exception\ValidationException when a
+     * @throws \ride\library\validation\exception\ValidationException when a
      * property is not valid
      */
     public function validateNode(Node $node, NodeModel $nodeModel) {
@@ -37,9 +37,9 @@ class GenericNodeValidator implements NodeValidator {
 
     /**
      * Validates the route of the node
-     * @param ride\library\cms\node\Node $node Node to be validated
-     * @param ride\library\cms\node\NodeModel $nodeModel Model of the nodes
-     * @param ride\library\validation\exception\ValidationException $exception
+     * @param \ride\library\cms\node\Node $node Node to be validated
+     * @param \ride\library\cms\node\NodeModel $nodeModel Model of the nodes
+     * @param \ride\library\validation\exception\ValidationException $exception
      * @return null
      */
     protected function validateRoute(Node $node, NodeModel $nodeModel, ValidationException $exception) {
@@ -115,8 +115,8 @@ class GenericNodeValidator implements NodeValidator {
 
     /**
      * Validates the publication dates
-     * @param ride\library\cms\node\Node $node Node to be validated
-     * @param ride\library\validation\exception\ValidationException $exception
+     * @param \ride\library\cms\node\Node $node Node to be validated
+     * @param \ride\library\validation\exception\ValidationException $exception
      * @return null
      */
     protected function validatePublicationDate(Node $node, ValidationException $exception) {
@@ -147,7 +147,7 @@ class GenericNodeValidator implements NodeValidator {
     /**
      * Validate a date configuration value
      * @param string $date date configuration value
-     * @param ride\library\validation\exception\ValidationException $exception
+     * @param \ride\library\validation\exception\ValidationException $exception
      * when a ValidationError occures, it will be added to this exception
      * @param string $fieldName name of the field to register possible errors
      * to the ValidationException

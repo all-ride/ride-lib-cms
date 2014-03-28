@@ -73,7 +73,7 @@ class NodeWidgetProperties implements WidgetProperties {
 
 	/**
 	 * Gets the node
-     * @return ride\library\cms\node\Node
+     * @return \ride\library\cms\node\Node
 	 */
 	public function getNode() {
 	    return $this->node;
@@ -127,7 +127,7 @@ class NodeWidgetProperties implements WidgetProperties {
 	 * Sets the cache type
 	 * @param string $type
 	 * @return null
-	 * @throws ride\library\cms\exception\CmsException when an invalid cache
+	 * @throws \ride\library\cms\exception\CmsException when an invalid cache
 	 * type has been provided
 	 */
 	public function setCache($type = null) {

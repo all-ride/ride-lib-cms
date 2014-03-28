@@ -6,7 +6,6 @@ use ride\library\cms\expired\ExpiredRoute;
 use ride\library\system\file\File;
 
 use \DOMDocument;
-use \DOMElement;
 
 /**
  * Xml implementation for the input/output of the expired routes
@@ -51,13 +50,13 @@ class XmlExpiredRouteIO implements ExpiredRouteIO {
 
     /**
      * File to store the expired paths
-     * @var ride\library\system\file\File
+     * @var \ride\library\system\file\File
      */
     private $file;
 
     /**
      * Constructs a new expired route IO
-     * @param ride\library\system\file\File $file
+     * @param \ride\library\system\file\File $file
      * @return null
      */
     public function __construct(File $file) {

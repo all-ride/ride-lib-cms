@@ -12,7 +12,7 @@ interface NodeIO {
 
     /**
      * Sets the instance of the node model
-     * @param ride\library\cms\node\NodeModel $nodeModel
+     * @param \ride\library\cms\node\NodeModel $nodeModel
      * @return null
      */
     public function setNodeModel(NodeModel $nodeModel);
@@ -23,8 +23,8 @@ interface NodeIO {
      * @param boolean $children Set to true to lookup the children of the node
      * @param boolean|integer $depth Number of children levels to fetch, false
      * to fetch all child levels
-     * @return ride\library\cms\node\Node
-     * @throws ride\library\cms\node\exception\NodeNotFoundException when the
+     * @return \ride\library\cms\node\Node
+     * @throws \ride\library\cms\node\exception\NodeNotFoundException when the
      * requested node could not be found
      */
     public function getNode($nodeId, $type = null, $children = false, $depth = false);
@@ -60,14 +60,14 @@ interface NodeIO {
 
     /**
      * Writes a the nodes into the data source
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @return null
      */
     public function setNode(Node $node);
 
     /**
      * Deletes a node from the data source
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @param boolean $recursive Flag to see if child nodes should be deleted
      * @return null
      */

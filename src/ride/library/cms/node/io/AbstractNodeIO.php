@@ -14,7 +14,7 @@ abstract class AbstractNodeIO implements NodeIO {
 
     /**
      * Instance of the node model
-     * @var ride\library\cms\node\NodeModel
+     * @var \ride\library\cms\node\NodeModel
      */
     protected $nodeModel;
 
@@ -26,7 +26,7 @@ abstract class AbstractNodeIO implements NodeIO {
 
     /**
      * Sets the instance of the node model
-     * @param ride\library\cms\node\NodeModel $nodeModel
+     * @param \ride\library\cms\node\NodeModel $nodeModel
      * @return null
      */
     public function setNodeModel(NodeModel $nodeModel) {
@@ -39,8 +39,8 @@ abstract class AbstractNodeIO implements NodeIO {
      * @param boolean $children Set to true to lookup the children of the node
      * @param boolean|integer $depth Number of children levels to fetch, false
      * to fetch all child levels
-     * @return ride\library\cms\node\Node
-     * @throws ride\library\cms\node\exception\NodeNotFoundException when the
+     * @return \ride\library\cms\node\Node
+     * @throws \ride\library\cms\node\exception\NodeNotFoundException when the
      * requested node could not be found
      */
     public function getNode($nodeId, $type = null, $children = false, $depth = false) {
@@ -159,7 +159,7 @@ abstract class AbstractNodeIO implements NodeIO {
 
     /**
      * Writes a the nodes into the data source
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @return null
      */
     public function setNode(Node $node) {
@@ -181,7 +181,7 @@ abstract class AbstractNodeIO implements NodeIO {
 
     /**
      * Gets a id for a new node
-     * @param ride\library\cms\node\Node $node Node in need of a id
+     * @param \ride\library\cms\node\Node $node Node in need of a id
      * @return string
      */
     protected function getNewNodeId(Node $node) {
@@ -204,7 +204,7 @@ abstract class AbstractNodeIO implements NodeIO {
 
     /**
      * Removes a node
-     * @param ride\library\cms\node\Node $node Node to delete
+     * @param \ride\library\cms\node\Node $node Node to delete
      * @param boolean $recursive Flag to see if child nodes should be deleted
      * @return
      */
@@ -235,14 +235,14 @@ abstract class AbstractNodeIO implements NodeIO {
 
     /**
      * Writes the provided node to the data source
-     * @param ride\library\cms\node\Node $node Node to write
+     * @param \ride\library\cms\node\Node $node Node to write
      * @return null
      */
     abstract protected function writeNode(Node $node);
 
     /**
      * Deletes the provided node to the data source
-     * @param ride\library\cms\node\Node $node Node to delete
+     * @param \ride\library\cms\node\Node $node Node to delete
      * @return null
      */
     abstract protected function deleteNode(Node $node);

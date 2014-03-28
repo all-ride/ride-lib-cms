@@ -45,7 +45,7 @@ class SiteNodeType extends AbstractNodeType {
 
     /**
      * Creates a new node of this type
-     * @return ride\library\cms\node\Node
+     * @return \ride\library\cms\node\Node
      */
     public function createNode() {
         $site = new SiteNode();

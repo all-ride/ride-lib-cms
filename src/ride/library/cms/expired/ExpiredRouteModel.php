@@ -11,7 +11,7 @@ class ExpiredRouteModel {
 
     /**
      * Implementation of the expired route input/output
-     * @var ride\library\cms\expired\io\ExpiredRouteIO
+     * @var \ride\library\cms\expired\io\ExpiredRouteIO
      */
     private $io;
 
@@ -23,7 +23,7 @@ class ExpiredRouteModel {
 
     /**
      * Constructs a new expired path model
-     * @param ride\library\cms\expired\io\ExpiredRouteIO $io
+     * @param \ride\library\cms\expired\io\ExpiredRouteIO $io
      * @return null
      */
     public function __construct(ExpiredRouteIO $io) {

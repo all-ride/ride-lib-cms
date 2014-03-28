@@ -77,7 +77,7 @@ class Content {
      * Sets the type of this content
      * @param string $type
      * @return null
-     * @throws ride\library\cms\exception\CmsException when the type is empty
+     * @throws \ride\library\cms\exception\CmsException when the type is empty
      */
     private function setType($type) {
         if (!is_string($type) || !$type) {
@@ -91,7 +91,7 @@ class Content {
      * Sets the title of this content
      * @param string $title
      * @return null
-     * @throws ride\library\cms\exception\CmsException when the title is empty
+     * @throws \ride\library\cms\exception\CmsException when the title is empty
      */
     private function setTitle($title) {
         if (!is_string($title) || !$title) {
