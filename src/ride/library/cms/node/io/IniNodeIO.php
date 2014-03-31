@@ -42,19 +42,19 @@ class IniNodeIO extends AbstractNodeIO {
 
     /**
      * Path for the node files
-     * @var ride\library\system\file\File
+     * @var \ride\library\system\file\File
      */
     protected $path;
 
     /**
      * Instance of the config helper
-     * @var ride\library\config\ConfigHelper
+     * @var \ride\library\config\ConfigHelper
      */
     protected $configHelper;
 
     /**
      * Instance of the expired route model
-     * @var ride\library\cms\expired\ExpiredRouteModel
+     * @var \ride\library\cms\expired\ExpiredRouteModel
      */
     protected $expiredRouteModel;
 
@@ -156,7 +156,7 @@ class IniNodeIO extends AbstractNodeIO {
     /**
      * Gets a node from a INI string
      * @param string $ini
-     * @return ride\library\cms\node\Node
+     * @return \ride\library\cms\node\Node
      */
     protected function getNodeFromIni($ini) {
         $ini = $this->parseIni($ini);
@@ -227,7 +227,7 @@ class IniNodeIO extends AbstractNodeIO {
 
     /**
      * Writes a node into the data source
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @return null
      */
     protected function writeNode(Node $node) {
@@ -246,8 +246,8 @@ class IniNodeIO extends AbstractNodeIO {
 
     /**
      * Handles the expired routes
-     * @param ride\library\system\file\File $nodeFile
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\system\file\File $nodeFile
+     * @param \ride\library\cms\node\Node $node
      * @return null
      */
     protected function handleExpiredRoutes(File $nodeFile, Node $node) {
@@ -277,7 +277,7 @@ class IniNodeIO extends AbstractNodeIO {
 
     /**
      * Gets the ini string of a node
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @return string
      */
     protected function getIniFromNode(Node $node) {
@@ -298,7 +298,7 @@ class IniNodeIO extends AbstractNodeIO {
 
     /**
      * Deletes a node
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @return null
      */
     protected function deleteNode(Node $node) {
@@ -321,7 +321,7 @@ class IniNodeIO extends AbstractNodeIO {
     /**
      * Gets the file for the node
      * @param string $nodeId Id of the node
-     * @return ride\library\system\file\File
+     * @return \ride\library\system\file\File
      */
     protected function getNodeFile($node) {
         $rootNodeId = $node->getRootNodeId();

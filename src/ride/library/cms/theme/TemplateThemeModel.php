@@ -11,7 +11,7 @@ class TemplateThemeModel implements ThemeModel {
 
     /**
      * Constructs a new theme model
-     * @param ride\library\template\theme\ThemeModel $model
+     * @param \ride\library\template\theme\ThemeModel $model
      * @return null
      */
     public function __construct(LibraryThemeModel $model) {
@@ -22,7 +22,7 @@ class TemplateThemeModel implements ThemeModel {
      * Gets a theme
      * @param string $name Machine name of the theme
      * @return Theme
-     * @throws ride\library\template\exception\ThemeNotFoundException
+     * @throws \ride\library\template\exception\ThemeNotFoundException
      */
     public function getTheme($name) {
         $theme = $this->model->getTheme($name);

@@ -14,7 +14,7 @@ class GenericNodeStructureParser implements NodeStructureParser {
     /**
      * Gets the node tree in a text format
      * @param string $locale Locale of the structure
-     * @param ride\library\cms\node\Node $site Site node
+     * @param \ride\library\cms\node\Node $site Site node
      * @return string Site node tree in text format
      */
     public function getStructure($locale, Node $site) {
@@ -38,8 +38,8 @@ class GenericNodeStructureParser implements NodeStructureParser {
     /**
      * Saves the node tree from the structure in text format
      * @param string $locale Locale of the structure
-     * @param ride\library\cms\node\Node $site Site node
-     * @param ride\library\cms\node\NodeModel $nodeModel Instance of the node
+     * @param \ride\library\cms\node\Node $site Site node
+     * @param \ride\library\cms\node\NodeModel $nodeModel Instance of the node
      * model
      * @param string $structure Site node tree in text format
      * @return null
@@ -107,10 +107,10 @@ class GenericNodeStructureParser implements NodeStructureParser {
     /**
      * Saves the node in the model
      * @param string $locale Locale of the structure
-     * @param ride\library\cms\node\Node $site Site node
-     * @param ride\library\cms\node\NodeModel $nodeModel
+     * @param \ride\library\cms\node\Node $site Site node
+     * @param \ride\library\cms\node\NodeModel $nodeModel
      * @param array $nodeArray
-     * @return ride\library\cms\node\Node
+     * @return \ride\library\cms\node\Node
      */
     protected function saveNode($locale, Node $site, NodeModel $nodeModel, array $nodeArray) {
         if (isset($nodeArray['id'])) {

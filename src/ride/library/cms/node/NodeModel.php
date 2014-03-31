@@ -6,7 +6,6 @@ use ride\library\cms\node\exception\NodeNotFoundException;
 use ride\library\cms\node\io\NodeIO;
 use ride\library\cms\node\type\NodeTypeManager;
 use ride\library\cms\node\validator\NodeValidator;
-use ride\library\cms\node\NodeProperty;
 use ride\library\event\EventManager;
 
 /**
@@ -28,25 +27,25 @@ class NodeModel {
 
     /**
      * Facade of the node types
-     * @var ride\library\cms\node\type\NodeTypeManager
+     * @var \ride\library\cms\node\type\NodeTypeManager
      */
     protected $nodeTypeManager;
 
     /**
      * Facade of the node types
-     * @var ride\library\cms\node\io\NodeIO
+     * @var \ride\library\cms\node\io\NodeIO
      */
     protected $io;
 
     /**
      * Validator for the node properties
-     * @var ride\library\cms\node\validator\NodeValidator
+     * @var \ride\library\cms\node\validator\NodeValidator
      */
     protected $validator;
 
     /**
      * Instance of the event manager
-     * @var ride\library\event\EventManager
+     * @var \ride\library\event\EventManager
      */
     protected $eventManager;
 
@@ -75,7 +74,7 @@ class NodeModel {
 
     /**
      * Gets the facade for the node types
-     * @return joppa\model\node\type\NodeTypeManager
+     * @return \ride\library\cms\node\type\NodeTypeManager
      */
     public function getNodeTypeManager() {
         return $this->nodeTypeManager;
@@ -218,9 +217,9 @@ class NodeModel {
 
     /**
      * Validates a node
-     * @param ride\library\cms\node\Node $node The node to validate
+     * @param \ride\library\cms\node\Node $node The node to validate
      * @return null
-     * @throws ride\library\validation\exception\ValidationException when the
+     * @throws \ride\library\validation\exception\ValidationException when the
      * node is invalid
      */
     public function validateNode(Node $node) {
@@ -264,7 +263,7 @@ class NodeModel {
 
     /**
      * Removes a node
-     * @param ride\library\cms\node\Node $node Node to remove
+     * @param \ride\library\cms\node\Node $node Node to remove
      * @param boolean $recursive Flag to see if child nodes should be deleted
      * @param string $description Description of the remove action
      * @return
@@ -293,7 +292,7 @@ class NodeModel {
 
     /**
      * Clones a node
-     * @param ride\library\cms\node\Node $node Node to clone
+     * @param \ride\library\cms\node\Node $node Node to clone
      * @param boolean $recursive Set to true to also clone the children of the
      * node
      * @param boolean $reorder Set to false to just clone the order index
@@ -414,8 +413,8 @@ class NodeModel {
 
     /**
      * Clones the node's properties to the destination
-     * @param ride\library\cms\node\Node $source Source node
-     * @param ride\library\cms\node\Node $destination Destination node
+     * @param \ride\library\cms\node\Node $source Source node
+     * @param \ride\library\cms\node\Node $destination Destination node
      * @return null
      */
     protected function cloneNodeProperties(Node $source, Node $destination, $keepOriginalName, $cloneRoutes) {
@@ -616,7 +615,7 @@ class NodeModel {
 
     /**
      * Gets the breadcrumbs of a node
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @param string $baseScript Base script for the node routes
      * @param string $locale Code of the locale
      * @return array Array with the URL as key and the node name as value
@@ -631,7 +630,7 @@ class NodeModel {
         $parent = $node->getParentNode();
         while ($parent) {
             $nodeType = $this->nodeTypeManager->getNodeType($parent->getType());
-            if ($nodeType->getFrontendCallback() && !$parent->hideInBreadcrumbs()) {
+            if (($nodeType->getFrontendCallback() || $parent->getLevel() === 0) && !$parent->hideInBreadcrumbs()) {
                 $url = $baseScript . $parent->getRoute($locale);
                 $urls[$url] = $parent->getName($locale);
             }
@@ -683,7 +682,7 @@ class NodeModel {
 
     /**
      * Gets the number of children levels for the provided node
-     * @param ride\library\cms\node\Node $node
+     * @param \ride\library\cms\node\Node $node
      * @return integer
      */
     public function getChildrenLevels(Node $node) {

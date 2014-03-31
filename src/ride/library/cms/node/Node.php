@@ -431,7 +431,7 @@ class Node {
      * @param boolean|null $inherit True to inherit this setting to lower
      * levels, false to not inherit and null to use the previous inherit state
      * @return null
-     * @throws ride\library\cms\exception\CmsException when the key is invalid
+     * @throws \ride\library\cms\exception\CmsException when the key is invalid
      */
     public function set($key, $value, $inherit = null) {
         $this->checkPropertyKey($key);
@@ -483,7 +483,7 @@ class Node {
      * if the property will inherit, needed internally for recursive lookup
      * @return mixed Value of the property if found, the provided default value
      * otherwise
-     * @throws ride\library\cms\exception\CmsException when the key is invalid
+     * @throws \ride\library\cms\exception\CmsException when the key is invalid
      */
     public function get($key, $default = null, $inherited = true, $inheritedPropertyRequired = false) {
         $this->checkPropertyKey($key);
@@ -503,7 +503,7 @@ class Node {
      * Checks whether a key is a non empty string
      * @param mixed $key Key for a property
      * @return null
-     * @throws ride\library\cms\exception\CmsException when the key is invalid
+     * @throws \ride\library\cms\exception\CmsException when the key is invalid
      */
     protected function checkPropertyKey($key) {
         if (!is_string($key) || $key === '') {
@@ -627,10 +627,13 @@ class Node {
 
     /**
      * Sets whether to hide this node in the breadcrumbs
-     * @return boolean
+     * @param boolean $flag True to hide, false to show
+     * @param boolean|null $inherit True to inherit this setting to lower
+     * levels, false to not inherit and null to use the previous inherit state
+     * @return null
      */
-    public function setHideInBreadcrumbs($flag) {
-        $this->set(self::PROPERTY_HIDE_BREADCRUMBS, $flag ? 1 : 0);
+    public function setHideInBreadcrumbs($flag, $inherit = null) {
+        $this->set(self::PROPERTY_HIDE_BREADCRUMBS, $flag ? 1 : 0, $inherit);
     }
 
     /**
@@ -643,10 +646,13 @@ class Node {
 
     /**
      * Sets whether to hide this node in the menu
-     * @return boolean
+     * @param boolean $flag True to hide, false to show
+     * @param boolean|null $inherit True to inherit this setting to lower
+     * levels, false to not inherit and null to use the previous inherit state
+     * @return null
      */
-    public function setHideInMenu($flag) {
-        $this->set(self::PROPERTY_HIDE_MENU, $flag ? 1 : 0);
+    public function setHideInMenu($flag, $inherit = null) {
+        $this->set(self::PROPERTY_HIDE_MENU, $flag ? 1 : 0, $inherit);
     }
 
     /**
@@ -811,7 +817,7 @@ class Node {
     /**
      * Gets a widget properties for the provided widget
      * @param integer $widgetId Id of the widget
-     * @return joppa\model\widget\WidgetProperties
+     * @return \ride\library\cms\widget\NodeWidgetProperties
      */
     public function getWidgetProperties($widgetId) {
         return new NodeWidgetProperties($this, $widgetId);
@@ -908,7 +914,7 @@ class Node {
      * @param string $region Name of the region
      * @param int $id Id of the widget instance
      * @return null
-     * @throws ride\library\cms\exception\CmsException when a widget could not
+     * @throws \ride\library\cms\exception\CmsException when a widget could not
      * be found
      */
     public function deleteWidget($region, $widgetId) {
@@ -951,7 +957,7 @@ class Node {
      * @param string|array $widgets Array with widget ids or a string with
      * widget ids separated by a comma.
      * @return null
-     * @throws ride\library\cms\exception\CmsException when the widgets could
+     * @throws \ride\library\cms\exception\CmsException when the widgets could
      * not be ordered
      */
     public function orderWidgets($region, $widgets) {

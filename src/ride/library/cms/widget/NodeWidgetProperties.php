@@ -4,7 +4,11 @@ namespace ride\library\cms\widget;
 
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\node\Node;
+use ride\library\cms\node\NodeProperty;
 use ride\library\widget\WidgetProperties;
+use ride\library\reflection\Boolean;
+
+use \DateTime;
 
 /**
  * Widget properties based on a node
@@ -73,7 +77,7 @@ class NodeWidgetProperties implements WidgetProperties {
 
 	/**
 	 * Gets the node
-     * @return ride\library\cms\node\Node
+     * @return \ride\library\cms\node\Node
 	 */
 	public function getNode() {
 	    return $this->node;
@@ -127,7 +131,7 @@ class NodeWidgetProperties implements WidgetProperties {
 	 * Sets the cache type
 	 * @param string $type
 	 * @return null
-	 * @throws ride\library\cms\exception\CmsException when an invalid cache
+	 * @throws \ride\library\cms\exception\CmsException when an invalid cache
 	 * type has been provided
 	 */
 	public function setCache($type = null) {
@@ -194,5 +198,40 @@ class NodeWidgetProperties implements WidgetProperties {
 	public function getCacheTtl() {
 	    return $this->getWidgetProperty(self::PROPERTY_CACHE_TTL, 0);
 	}
+
+    /**
+     * Checks whether this widget is published
+     * @return boolean True if this widget is published, false if not
+     */
+    public function isPublished() {
+        $publish = $this->getWidgetProperty(Node::PROPERTY_PUBLISH, true);
+        if (!Boolean::getBoolean($publish)) {
+            return false;
+        }
+
+        $now = time();
+        $publishStart = $this->getWidgetProperty(Node::PROPERTY_PUBLISH_START);
+        $publishStart = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStart);
+        $publishStop = $this->getWidgetProperty(Node::PROPERTY_PUBLISH_STOP);
+        $publishStop = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStop);
+
+        if ($publishStart && $publishStop) {
+            if ($publishStart->getTimestamp() <= $now && $now < $publishStop->getTimestamp()) {
+                return true;
+            }
+        } elseif ($publishStart) {
+            if ($publishStart->getTimestamp() <= $now) {
+                return true;
+            }
+        } elseif ($publishStop) {
+            if ($now < $publishStop->getTimestamp()) {
+                return true;
+            }
+        } else {
+            return true;
+        }
+
+        return false;
+    }
 
 }
