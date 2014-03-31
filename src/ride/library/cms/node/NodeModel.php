@@ -631,7 +631,7 @@ class NodeModel {
         $parent = $node->getParentNode();
         while ($parent) {
             $nodeType = $this->nodeTypeManager->getNodeType($parent->getType());
-            if ($nodeType->getFrontendCallback() && !$parent->hideInBreadcrumbs()) {
+            if (($nodeType->getFrontendCallback() || $parent->getLevel() === 0) && !$parent->hideInBreadcrumbs()) {
                 $url = $baseScript . $parent->getRoute($locale);
                 $urls[$url] = $parent->getName($locale);
             }
