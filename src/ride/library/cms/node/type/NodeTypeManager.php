@@ -45,7 +45,7 @@ class NodeTypeManager {
      * Gets the implementation of a node type
      * @param string $name
      * @return NodeType
-     * @throws ride\library\cms\exception\CmsException when the node type is
+     * @throws \ride\library\cms\exception\CmsException when the node type is
      * not added to this manager
      */
     public function getNodeType($name) {
@@ -69,7 +69,7 @@ class NodeTypeManager {
      * Removes a node type
      * @param string $name Name of the node type
      * @return null
-     * @throws ride\library\cms\exception\CmsException when the node type is
+     * @throws \ride\library\cms\exception\CmsException when the node type is
      * not added to this manager
      */
     public function removeNodeType($name) {

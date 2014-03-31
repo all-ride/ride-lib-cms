@@ -19,7 +19,7 @@ abstract class AbstractNodeType implements NodeType {
 
     /**
      * Gets the callback for the frontend route
-     * @return string|array|zibo\library\Callback
+     * @return string|array|\ride\library\Callback
      */
     public function getFrontendCallback() {
         return null;
@@ -35,7 +35,7 @@ abstract class AbstractNodeType implements NodeType {
 
     /**
      * Creates a new node of this type
-     * @return ride\library\cms\node\Node
+     * @return \ride\library\cms\node\Node
      */
     public function createNode() {
         $node = new Node($this->getName());

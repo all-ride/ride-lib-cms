@@ -34,13 +34,13 @@ class TextParser {
 
 	/**
 	 * Model of the nodes
-	 * @var ride\library\cms\node\NodeModel
+	 * @var \ride\library\cms\node\NodeModel
 	 */
 	protected $nodeModel;
 
 	/**
 	 * Context for the site variables
-	 * @var ride\library\cms\node\Node
+	 * @var \ride\library\cms\node\Node
 	 */
 	protected $context;
 
@@ -64,9 +64,9 @@ class TextParser {
 
 	/**
 	 * Constructs a new text parser
-	 * @param ride\library\cms\node\NodeModel $nodeModel Instance of the node
+	 * @param \ride\library\cms\node\NodeModel $nodeModel Instance of the node
 	 * model
-	 * @param ride\library\cms\node\Node $context Context for the site
+	 * @param \ride\library\cms\node\Node $context Context for the site
 	 * variables
 	 * @param string $locale Code of the current locale
 	 * @param string $baseScript URL to the base script
@@ -111,7 +111,7 @@ class TextParser {
 	 * Gets the value of the provided variable
 	 * @param array $matches The matches of the variable regular expression
 	 * @return string The value of the provided variable
-	 * @throws ride\library\cms\exception\CmsException when an unsupported
+	 * @throws \ride\library\cms\exception\CmsException when an unsupported
 	 * variable is provided
 	 */
     protected function getParsedVariable(array $matches) {

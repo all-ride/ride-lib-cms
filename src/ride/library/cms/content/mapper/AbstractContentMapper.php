@@ -11,7 +11,7 @@ abstract class AbstractContentMapper implements ContentMapper {
 
     /**
      * Instance of the node model
-     * @var ride\library\cms\node\NodeModel
+     * @var \ride\library\cms\node\NodeModel
      */
     protected $nodeModel;
 
@@ -29,7 +29,7 @@ abstract class AbstractContentMapper implements ContentMapper {
 
     /**
      * Constructs a new abstract content mapper
-     * @param ride\library\cms\node\NodeModel $nodeModel Instance of the node
+     * @param \ride\library\cms\node\NodeModel $nodeModel Instance of the node
      * model
      * @return null
      */

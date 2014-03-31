@@ -50,9 +50,9 @@ class ContentFacade {
 	/**
      * Gets the mapper for a content type
      * @param string $type Name of the content type
-     * @return ride\library\ms\content\mapper\ContentMapper Mapper for the
+     * @return \ride\library\cms\content\mapper\ContentMapper Mapper for the
      * content type
-     * @throws ride\library\cms\exception\CmsException when no mapper could be
+     * @throws \ride\library\cms\exception\CmsException when no mapper could be
      * found
 	 */
 	public function getContentMapper($type) {
@@ -110,7 +110,7 @@ class ContentFacade {
 	/**
 	 * Registers a mapper for a content type
 	 * @param string $type Name of the content type
-	 * @param ride\library\cms\content\mapper\ContentMapper $mapper Content
+	 * @param \ride\library\cms\content\mapper\ContentMapper $mapper Content
 	 * mapper for the content type
 	 * @return null
 	 */
@@ -120,7 +120,7 @@ class ContentFacade {
 
 	/**
 	 * Registers a IO implementation for loading content mappers
-	 * @param ride\library\cms\content\io\ContentMapperIO $io IO
+	 * @param \ride\library\cms\content\mapper\io\ContentMapperIO $io IO
 	 * implementation for loading content mappers
 	 * @return null
 	 */
