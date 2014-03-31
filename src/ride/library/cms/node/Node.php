@@ -627,10 +627,13 @@ class Node {
 
     /**
      * Sets whether to hide this node in the breadcrumbs
-     * @return boolean
+     * @param boolean $flag True to hide, false to show
+     * @param boolean|null $inherit True to inherit this setting to lower
+     * levels, false to not inherit and null to use the previous inherit state
+     * @return null
      */
-    public function setHideInBreadcrumbs($flag) {
-        $this->set(self::PROPERTY_HIDE_BREADCRUMBS, $flag ? 1 : 0);
+    public function setHideInBreadcrumbs($flag, $inherit = null) {
+        $this->set(self::PROPERTY_HIDE_BREADCRUMBS, $flag ? 1 : 0, $inherit);
     }
 
     /**
@@ -643,10 +646,13 @@ class Node {
 
     /**
      * Sets whether to hide this node in the menu
-     * @return boolean
+     * @param boolean $flag True to hide, false to show
+     * @param boolean|null $inherit True to inherit this setting to lower
+     * levels, false to not inherit and null to use the previous inherit state
+     * @return null
      */
-    public function setHideInMenu($flag) {
-        $this->set(self::PROPERTY_HIDE_MENU, $flag ? 1 : 0);
+    public function setHideInMenu($flag, $inherit = null) {
+        $this->set(self::PROPERTY_HIDE_MENU, $flag ? 1 : 0, $inherit);
     }
 
     /**
