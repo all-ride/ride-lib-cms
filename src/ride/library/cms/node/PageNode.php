@@ -17,10 +17,15 @@ class PageNode extends Node {
 
     /**
      * Constructs a new site node
+     * @param string $type Name of the node type
      * @return null
      */
-    public function __construct() {
-        parent::__construct(PageNodeType::NAME);
+    public function __construct($type = null) {
+        if (!$type) {
+            $type = PageNodeType::NAME;
+        }
+
+        parent::__construct($type);
 
         $this->defaultInherit = false;
     }
