@@ -10,10 +10,16 @@ use ride\library\cms\content\text\variable\VariableParser;
 class VariablesTextParser extends AbstractTextParser {
 
     /**
-     * Regular expression for a node variable
+     * Characters to open a variable placeholder
      * @var string
      */
-    const REGEX_VARIABLE = '/%(([a-zA-Z0-9]*)\\.)*([a-zA-Z0-9]*)%/';
+    const OPEN = '[[';
+
+    /**
+     * Characters to close a variable placeholder
+     * @var string
+     */
+    const CLOSE = ']]';
 
     /**
      * Variable parsers for the chain
@@ -57,7 +63,33 @@ class VariablesTextParser extends AbstractTextParser {
             return $text;
         }
 
-        return preg_replace_callback(self::REGEX_VARIABLE, array($this, 'getParsedVariable'), $text);
+        $offset = 0;
+        $lengthOpen = strlen(self::OPEN);
+        $lengthClose = strlen(self::CLOSE);
+
+        do {
+            $positionOpen = strpos($text, self::OPEN, $offset);
+            if ($positionOpen === false) {
+                break;
+            }
+
+            $positionClose = strpos($text, self::CLOSE, $positionOpen);
+            if ($positionOpen === false) {
+                break;
+            }
+
+            $variable = substr($text, $positionOpen + $lengthOpen, $positionClose - $positionOpen - $lengthClose);
+            $textBefore = substr($text, 0, $positionOpen);
+            $textAfter = substr($text, $positionClose + $lengthClose);
+
+            $text = $textBefore . $this->getParsedVariable($variable);
+
+            $offset = strlen($text);
+
+            $text .= $textAfter;
+        } while ($positionOpen !== false);
+
+        return $text;
     }
 
     /**
@@ -67,18 +99,15 @@ class VariablesTextParser extends AbstractTextParser {
      * @throws \ride\library\cms\exception\CmsException when an unsupported
      * variable is provided
      */
-    protected function getParsedVariable(array $matches) {
-        $variable = substr($matches[0], 1, -1);
-        $tokens = explode('.', $variable);
-
+    protected function getParsedVariable($variable) {
         foreach ($this->variableParsers as $variableParser) {
-            $value = $variableParser->parseVariable($variable, $tokens);
+            $value = $variableParser->parseVariable($variable);
             if ($value !== null) {
                 return $value;
             }
         }
 
-        return $matches[0];
+        return self::OPEN . $variable . self::CLOSE;
     }
 
 }

@@ -24,6 +24,12 @@ class NodeVariableParser extends AbstractVariableParser {
     const VARIABLE_URL = 'url';
 
     /**
+     * Name of the link variable
+     * @var string
+     */
+    const VARIABLE_LINK = 'link';
+
+    /**
      * Instance of the node model
      * @var \ride\library\cms\node\NodeModel
      */
@@ -42,40 +48,49 @@ class NodeVariableParser extends AbstractVariableParser {
     /**
      * Parses the provided variable
      * @param string $variable Full variable
-     * @param array $tokens Tokens of the variable, exploded on . (dot)
      * @return mixed Value of the variable if resolved, null otherwise
      */
-    public function parseVariable($variable, array $tokens) {
+    public function parseVariable($variable) {
+        $tokens = explode('.', $variable);
+
         switch ($tokens[0]) {
             case 'node':
                 if (count($tokens) < 3) {
-                    return $matches[0];
+                    return null;
                 }
 
                 try {
                     $node = $this->nodeModel->getNode($tokens[1], 0);
                 } catch (NodeNotFoundException $exception) {
-                    return $matches[0];
+                    return null;
                 }
+
+                $locale = isset($tokens[3]) ? $tokens[3] : $this->textParser->getLocale();
 
                 switch ($tokens[2]) {
                     case self::VARIABLE_URL:
-                        return $this->textParser->getBaseUrl() . $node->getRoute(isset($tokens[3]) ? $tokens[3] : $this->textParser->getLocale());
+                        return $this->textParser->getBaseUrl() . $node->getRoute($locale);
                     case self::VARIABLE_NAME:
-                        return $node->getName(isset($tokens[3]) ? $tokens[3] : $this->textParser->getLocale());
+                        return $node->getName($locale);
+                    case self::VARIABLE_LINK:
+                        return '<a href="' . $this->textParser->getBaseUrl() . $node->getRoute($locale) . '">' . $node->getName($locale) . '</a>';
                 }
 
                 break;
             case 'site':
                 if (count($tokens) < 2) {
-                    return $matches[0];
+                    return null;
                 }
+
+                $locale = isset($tokens[2]) ? $tokens[2] : $this->textParser->getLocale();
 
                 switch ($tokens[1]) {
                     case self::VARIABLE_NAME:
-                        return $this->textParser->getNode()->getRootNode()->getName(isset($tokens[2]) ? $tokens[2] : $this->textParser->getLocale());
+                        return $this->textParser->getNode()->getRootNode()->getName($locale);
                     case self::VARIABLE_URL:
                         return $this->textParser->getBaseUrl();
+                    case self::VARIABLE_LINK:
+                        return '<a href="' . $this->textParser->getBaseUrl() . '">' . $this->textParser->getNode()->getRootNode()->getName($locale) . '</a>';
                 }
 
                 break;

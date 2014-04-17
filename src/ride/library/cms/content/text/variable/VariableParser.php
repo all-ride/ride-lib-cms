@@ -19,9 +19,8 @@ interface VariableParser {
     /**
      * Parses the provided variable
      * @param string $variable Full variable
-     * @param array $tokens Tokens of the variable, exploded on . (dot)
      * @return mixed Value of the variable if resolved, null otherwise
      */
-    public function parseVariable($variable, array $tokens);
+    public function parseVariable($variable);
 
 }
