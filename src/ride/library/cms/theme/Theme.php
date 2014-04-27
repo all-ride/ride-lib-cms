@@ -10,12 +10,6 @@ use ride\library\template\theme\Theme as TemplateTheme;
 interface Theme extends TemplateTheme {
 
     /**
-     * Gets the display name of this theme
-     * @return string
-     */
-    public function getDisplayName();
-
-    /**
      * Checks if a region exists in this theme
      * @return boolean
      */
