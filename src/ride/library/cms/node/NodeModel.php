@@ -623,7 +623,7 @@ class NodeModel {
         $urls = array();
 
         if (!$node->hideInBreadcrumbs()) {
-            $urls[$baseScript . $node->getRoute($locale)] = $node->getName($locale);
+            $urls[$baseScript . $node->getRoute($locale)] = $node->getName($locale, 'breadcrumb');
         }
 
         $parent = $node->getParentNode();
@@ -631,7 +631,7 @@ class NodeModel {
             $nodeType = $this->nodeTypeManager->getNodeType($parent->getType());
             if (($nodeType->getFrontendCallback() || $parent->getLevel() === 0) && !$parent->hideInBreadcrumbs()) {
                 $url = $baseScript . $parent->getRoute($locale);
-                $urls[$url] = $parent->getName($locale);
+                $urls[$url] = $parent->getName($locale, 'breadcrumb');
             }
 
             $parent = $parent->getParentNode();
