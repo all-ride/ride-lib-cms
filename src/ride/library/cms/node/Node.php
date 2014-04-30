@@ -556,12 +556,22 @@ class Node {
         }
 
         if ($locale) {
+            // context name for the provided locale
             $name = $this->get(self::PROPERTY_NAME . '.' . $locale . $context);
             if ($name) {
                 return $name;
             }
+
+            if ($context) {
+                // general name for the provided locale
+                $name = $this->get(self::PROPERTY_NAME . '.' . $locale);
+                if ($name) {
+                    return $name;
+                }
+            }
         }
 
+        // context name for any locale
         foreach ($this->properties as $key => $property) {
             if ($key == self::PROPERTY_NAME . $context || (strpos($key, self::PROPERTY_NAME . '.') === 0 && (!$context || strpos($key, $context)))) {
                 return $property->getValue();
@@ -569,9 +579,11 @@ class Node {
         }
 
         if ($context) {
-            return $this->getName($locale);
+            // general name for any locale
+            return $this->getName();
         }
 
+        // no name
         return null;
     }
 
