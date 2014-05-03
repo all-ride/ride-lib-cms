@@ -2,7 +2,7 @@
     "name": "ride/lib-cms",
     "description": "CMS library of the Ride framework",
     "license": "MIT",
-    "version": "0.10.5",
+    "version": "0.10.6",
     "authors": [
         {
             "name": "Joris Vandeweerd",
@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "ride/lib-common": ">=0.3.1",
+        "ride/lib-common": ">=0.4.0",
         "ride/lib-config": ">=0.2.3",
         "ride/lib-reflection": ">=0.4.0",
         "ride/lib-template": ">=0.4.0",
