@@ -7,7 +7,7 @@ use ride\library\cms\node\NodeModel;
 use ride\library\cms\node\NodeProperty;
 use ride\library\validation\exception\ValidationException;
 use ride\library\validation\ValidationError;
-use ride\library\String;
+use ride\library\StringHelper;
 
 use \DateTime;
 
@@ -68,8 +68,7 @@ class GenericNodeValidator implements NodeValidator {
             $tokens = explode('/', $route);
             foreach ($tokens as $index => $token) {
                 if ($token) {
-                    $token = new String($token);
-                    $token = $token->safeString();
+                    $token = StringHelper::safeString($token);
                 }
 
                 if (empty($token)) {
