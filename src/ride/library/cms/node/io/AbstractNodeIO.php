@@ -5,7 +5,7 @@ namespace ride\library\cms\node\io;
 use ride\library\cms\node\exception\NodeNotFoundException;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\NodeModel;
-use ride\library\String;
+use ride\library\StringHelper;
 
 /**
  * Abstract implementation for a node input/output
@@ -187,8 +187,8 @@ abstract class AbstractNodeIO implements NodeIO {
     protected function getNewNodeId(Node $node) {
         $this->getNodes();
 
-        $baseId = new String($node->getName());
-        $baseId = str_replace(array('.', '-', ' '), '', $baseId->safeString());
+        $baseId = StringHelper::safeString($node->getName());
+        $baseId = str_replace(array('.', '-', ' '), '', $baseId);
 
         $id = $baseId;
         $index = 1;

@@ -68,7 +68,11 @@ class GenericNodeValidator implements NodeValidator {
             $tokens = explode('/', $route);
             foreach ($tokens as $index => $token) {
                 if ($token) {
+<<<<<<< HEAD
                     $token = StringHelper::safeString($token);
+=======
+                    $token = StngHelper::safeString($token);
+>>>>>>> cee7888753f26c15c7dcbd4ce0dce49d97298d34
                 }
 
                 if (empty($token)) {

@@ -153,8 +153,10 @@ class NodeModel {
         }
 
         if (!$availableWidgets) {
-            return $nodes;
+            return array();
         }
+
+        $result = array();
 
         foreach ($nodes as $index => $node) {
             if (!isset($sites[$node->getRootNodeId()])) {
@@ -181,22 +183,19 @@ class NodeModel {
                 foreach ($nodeWidgetIds as $widgetId) {
                     $widgetId = trim($widgetId);
 
-                    if (isset($availableWidgets[$widgetId])) {
-                        $node->setWidgetId($widgetId);
-
-                        $found = true;
-
-                        break 2;
+                    if (!isset($availableWidgets[$widgetId])) {
+                        continue;
                     }
-                }
-            }
 
-            if (!$found) {
-                unset($nodes[$index]);
+                    $resultNode = clone $node;
+                    $resultNode->setWidgetId($widgetId);
+
+                    $result[] = $resultNode;
+                }
             }
         }
 
-        return $nodes;
+        return $result;
     }
 
     /**
@@ -624,7 +623,7 @@ class NodeModel {
         $urls = array();
 
         if (!$node->hideInBreadcrumbs()) {
-            $urls[$baseScript . $node->getRoute($locale)] = $node->getName($locale);
+            $urls[$baseScript . $node->getRoute($locale)] = $node->getName($locale, 'breadcrumb');
         }
 
         $parent = $node->getParentNode();
@@ -632,7 +631,7 @@ class NodeModel {
             $nodeType = $this->nodeTypeManager->getNodeType($parent->getType());
             if (($nodeType->getFrontendCallback() || $parent->getLevel() === 0) && !$parent->hideInBreadcrumbs()) {
                 $url = $baseScript . $parent->getRoute($locale);
-                $urls[$url] = $parent->getName($locale);
+                $urls[$url] = $parent->getName($locale, 'breadcrumb');
             }
 
             $parent = $parent->getParentNode();

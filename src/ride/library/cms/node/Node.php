@@ -531,33 +531,59 @@ class Node {
 
     /**
      * Set the name of this node for the provided locale
-     * @param string $locale
-     * @param string $name
+     * @param string $locale Code of the locale
+     * @param string $name Name of the node in the provided locale
+     * @param string $context Name of the context (menu, breadcrumb, title, ...)
      * @return null
      */
-    public function setName($locale, $name) {
-        $this->set(self::PROPERTY_NAME . '.' . $locale, $name, false);
+    public function setName($locale, $name, $context = null) {
+        if ($context) {
+            $context = '.' . $context;
+        }
+
+        $this->set(self::PROPERTY_NAME . '.' . $locale . $context, $name, false);
     }
 
     /**
      * Gets the name of this node for the provided locale
      * @param string $locale Code of the locale
+     * @param string $context Name of the context (menu, breadcrumb, title, ...)
      * @return string The name of this node
      */
-    public function getName($locale = null) {
+    public function getName($locale = null, $context = null) {
+        if ($context) {
+            $context = '.' . $context;
+        }
+
         if ($locale) {
-            $name = $this->get(self::PROPERTY_NAME . '.' . $locale);
+            // context name for the provided locale
+            $name = $this->get(self::PROPERTY_NAME . '.' . $locale . $context);
             if ($name) {
                 return $name;
             }
+
+            if ($context) {
+                // general name for the provided locale
+                $name = $this->get(self::PROPERTY_NAME . '.' . $locale);
+                if ($name) {
+                    return $name;
+                }
+            }
         }
 
+        // context name for any locale
         foreach ($this->properties as $key => $property) {
-            if ($key == self::PROPERTY_NAME || strpos($key, self::PROPERTY_NAME . '.') === 0) {
+            if ($key == self::PROPERTY_NAME . $context || (strpos($key, self::PROPERTY_NAME . '.') === 0 && (!$context || strpos($key, $context)))) {
                 return $property->getValue();
             }
         }
 
+        if ($context) {
+            // general name for any locale
+            return $this->getName();
+        }
+
+        // no name
         return null;
     }
 
