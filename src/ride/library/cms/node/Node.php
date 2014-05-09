@@ -635,6 +635,26 @@ class Node {
     }
 
     /**
+     * Gets the full URL to this node
+     * @param string $locale Code of the locale
+     * @param string $baseUrl Fallback for when the root node is no site node or
+     * when it has no base URL set
+     * @return string
+     */
+    public function getUrl($locale, $baseUrl) {
+        $rootNode = $this->getRootNode();
+        if ($rootNode instanceof SiteNode) {
+            $url = $rootNode->getBaseUrl($locale);
+        }
+
+        if (!$url) {
+            $url = $baseUrl;
+        }
+
+        return $url . $this->getRoute($locale);
+    }
+
+    /**
      * Sets the name of the theme
      * @param string $theme
      * @return null
