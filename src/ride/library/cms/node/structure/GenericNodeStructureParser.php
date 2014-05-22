@@ -113,7 +113,7 @@ class GenericNodeStructureParser implements NodeStructureParser {
      * @return \ride\library\cms\node\Node
      */
     protected function saveNode($locale, Node $site, NodeModel $nodeModel, array $nodeArray) {
-        if (isset($nodeArray['id'])) {
+        if (isset($nodeArray['id']) && $nodeArray['id']) {
             $node = $nodeModel->getNode($nodeArray['id']);
         } else {
             $type = $nodeArray['type'];
@@ -200,11 +200,11 @@ class GenericNodeStructureParser implements NodeStructureParser {
         }
 
         return array(
-            'id' => $id,
+            'id' => trim($id),
             'name' => $name,
             'spaces' => $numSpaces,
-            'route' => $route,
-            'type' => $type,
+            'route' => trim($route),
+            'type' => trim($type),
         );
     }
 
