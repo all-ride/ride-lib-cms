@@ -111,6 +111,23 @@ class NodeWidgetProperties implements WidgetProperties {
 	    return $this->node->get($this->widgetPropertyPrefix . $key, $default);
 	}
 
+    /**
+     * Gets all the properties of the widget
+     * @return array Array with the properties of the widget
+     */
+    public function getWidgetProperties() {
+        $result = array();
+
+        $properties = $this->node->getProperties();
+        foreach ($properties as $key => $property) {
+            if (strpos($key, $this->widgetPropertyPrefix) === 0) {
+                $result[str_replace($this->widgetPropertyPrefix, '', $key)] = $property->getValue();
+            }
+        }
+
+        return $result;
+    }
+
 	/**
 	 * Clear the settings of this widget
 	 * @return null
