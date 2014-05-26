@@ -64,6 +64,9 @@ abstract class AbstractContentMapper implements ContentMapper {
      */
     public function getType($site, $locale, $data) {
         $content = $this->getContent($site, $locale, $data);
+        if (!$content) {
+            return null;
+        }
 
         return $content->type;
     }
@@ -77,6 +80,9 @@ abstract class AbstractContentMapper implements ContentMapper {
      */
     public function getTitle($site, $locale, $data) {
         $content = $this->getContent($site, $locale, $data);
+        if (!$content) {
+            return null;
+        }
 
         return $content->title;
     }
@@ -90,6 +96,9 @@ abstract class AbstractContentMapper implements ContentMapper {
      */
     public function getTeaser($site, $locale, $data) {
         $content = $this->getContent($site, $locale, $data);
+        if (!$content) {
+            return null;
+        }
 
         return $content->teaser;
     }
@@ -103,6 +112,9 @@ abstract class AbstractContentMapper implements ContentMapper {
      */
     public function getUrl($site, $locale, $data) {
         $content = $this->getContent($site, $locale, $data);
+        if (!$content) {
+            return null;
+        }
 
         return $content->url;
     }
@@ -116,6 +128,9 @@ abstract class AbstractContentMapper implements ContentMapper {
      */
     public function getImage($site, $locale, $data) {
         $content = $this->getContent($site, $locale, $data);
+        if (!$content) {
+            return null;
+        }
 
         return $content->image;
     }
@@ -129,6 +144,9 @@ abstract class AbstractContentMapper implements ContentMapper {
      */
     public function getDate($site, $locale, $data) {
         $content = $this->getContent($site, $locale, $data);
+        if (!$content) {
+            return null;
+        }
 
         return $content->date;
     }
