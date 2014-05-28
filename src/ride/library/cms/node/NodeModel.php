@@ -2,6 +2,7 @@
 
 namespace ride\library\cms\node;
 
+use ride\library\cms\exception\CmsException;
 use ride\library\cms\node\exception\NodeNotFoundException;
 use ride\library\cms\node\io\NodeIO;
 use ride\library\cms\node\type\NodeTypeManager;
