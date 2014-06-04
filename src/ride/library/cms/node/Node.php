@@ -655,6 +655,53 @@ class Node {
     }
 
     /**
+     * Makes an absolute URL for the provided relative URL
+     * @param string $locale Code of the current locale
+     * @param string $baseUrl Base URL to the system
+     * @param string $url Relative URL path or absolute URL to parse
+     * @return string Provided URL made absolute
+     */
+    public function resolveUrl($locale, $baseUrl, $url) {
+        if ($url{0} == '#' || strncmp($url, 'mailto:', 7) === 0 || strncmp($url, 'http:', 5) === 0 || strncmp($url, 'https:', 6) === 0 || ($url{0} == '/' && $url{1} == '/')) {
+            return $url;
+        }
+
+        if (strncmp($url, './', 2) === 0) {
+            $baseUrl = $this->getUrl($locale, $baseUrl);
+            $baseUrl = rtrim($baseUrl, '/');
+
+            $position = strrpos($baseUrl, '/');
+
+            $baseUrl = substr($baseUrl, 0, $position);
+            $url = substr($url, 2);
+
+            $url = $baseUrl . '/' . $url;
+        } elseif (strncmp($url, '../', 3) === 0) {
+            $baseUrl = $this->getUrl($locale, $baseUrl);
+            $baseUrl = rtrim($baseUrl, '/');
+
+            $position = strrpos($baseUrl, '/');
+            $baseUrl = substr($baseUrl, 0, $position);
+
+            do {
+                $position = strrpos($baseUrl, '/');
+                if ($position === false) {
+                    break;
+                }
+
+                $baseUrl = substr($baseUrl, 0, $position);
+                $url = substr($url, 3);
+            } while (strncmp($url, '../', 3) === 0);
+
+            $url = $baseUrl . '/' . $url;
+        } else {
+            $url = $baseUrl . '/' . ltrim($url, '/');
+        }
+
+        return $url;
+    }
+
+    /**
      * Sets the name of the theme
      * @param string $theme
      * @return null
@@ -990,7 +1037,7 @@ class Node {
         }
 
         // remove properties of the widget
-        $properties = $this->getWidgetProperties($id);
+        $properties = $this->getWidgetProperties($widgetId);
         $properties->clearWidgetProperties();
 
         // remove the widget
