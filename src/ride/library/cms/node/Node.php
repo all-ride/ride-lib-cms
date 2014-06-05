@@ -670,18 +670,10 @@ class Node {
             $baseUrl = $this->getUrl($locale, $baseUrl);
             $baseUrl = rtrim($baseUrl, '/');
 
-            $position = strrpos($baseUrl, '/');
-
-            $baseUrl = substr($baseUrl, 0, $position);
-            $url = substr($url, 2);
-
-            $url = $baseUrl . '/' . $url;
+            $url = $baseUrl . substr($url, 1);
         } elseif (strncmp($url, '../', 3) === 0) {
             $baseUrl = $this->getUrl($locale, $baseUrl);
             $baseUrl = rtrim($baseUrl, '/');
-
-            $position = strrpos($baseUrl, '/');
-            $baseUrl = substr($baseUrl, 0, $position);
 
             do {
                 $position = strrpos($baseUrl, '/');
