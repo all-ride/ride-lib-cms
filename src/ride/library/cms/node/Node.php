@@ -900,6 +900,28 @@ class Node {
     }
 
     /**
+     * Gets the region for a widget
+     * @return string|null Name of the region if found, null otherwise
+     */
+    public function getRegion($widgetId) {
+        $prefix = self::PROPERTY_WIDGETS . '.';
+
+        foreach ($this->properties as $key => $property) {
+            if (strpos($key, $prefix) !== 0 || substr_count($key, '.') !== 1) {
+                continue;
+            }
+
+            $widgetIds = array_flip(explode(',', $property->getValue()));
+
+            if (isset($widgetIds[$widgetId])) {
+                return substr($key, strlen(self::PROPERTY_WIDGETS) + 1);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets a widget properties for the provided widget
      * @param integer $widgetId Id of the widget
      * @return \ride\library\cms\widget\NodeWidgetProperties
