@@ -323,6 +323,10 @@ class NodeModel {
     	    }
     	}
 
+        if ($newParent === null) {
+            $this->widgetTable = array();
+        }
+
     	$nodeType = $this->nodeTypeManager->getNodeType($node->getType());
     	$clone = $nodeType->createNode();
 
@@ -405,6 +409,10 @@ class NodeModel {
     	    unset($this->cloneTable);
     	}
 
+        if ($newParent === null) {
+            unset($this->widgetTable);
+        }
+
     	// save the root for newly created widgets
     	$this->setNode($clone->getRootNode(), 'Updated widgets for clone of ' . $node->getName());
 
@@ -415,6 +423,8 @@ class NodeModel {
      * Clones the node's properties to the destination
      * @param \ride\library\cms\node\Node $source Source node
      * @param \ride\library\cms\node\Node $destination Destination node
+     * @param boolean $keepOriginalName Set to true to keep the name untouched
+     * @param boolean $cloneRoutes Set to true to clone the routes of the nodes
      * @return null
      */
     protected function cloneNodeProperties(Node $source, Node $destination, $keepOriginalName, $cloneRoutes) {
@@ -428,7 +438,6 @@ class NodeModel {
         $parent = $source->getParentNode();
         $sourceProperties = $source->getProperties();
         $destinationProperties = array();
-        $widgetIds = array();
 
         // duplicate the regions and the set widgets
         foreach ($sourceProperties as $index => $sourceProperty) {
@@ -450,20 +459,22 @@ class NodeModel {
 
             $sourceWidgetIds = explode(NodeProperty::LIST_SEPARATOR, $sourceProperty->getValue());
             foreach ($sourceWidgetIds as $widgetId) {
-                if (in_array($widgetId, $inheritedWidgetIds)) {
+                if (isset($this->widgetTable[$widgetId])) {
+                    $cloneWidgetId = $this->widgetTable[$widgetId];
+                } elseif (in_array($widgetId, $inheritedWidgetIds)) {
                     // use the same widget id for inherited widgets
-                    $widgetIds[$widgetId] = $widgetId;
+                    $cloneWidgetId = $widgetId;
 
-                    $newValue .= ($newValue ? NodeProperty::LIST_SEPARATOR : '') . $widgetId;
+                    $this->widgetTable[$widgetId] = $widgetId;
                 } else {
                     // create a new widget for node widgets
                     $widget = $source->getWidget($widgetId);
                     $cloneWidgetId = $site->createWidget($widget);
 
-                    $widgetIds[$widgetId] = $cloneWidgetId;
-
-                    $newValue .= ($newValue ? NodeProperty::LIST_SEPARATOR : '') . $cloneWidgetId;
+                    $this->widgetTable[$widgetId] = $cloneWidgetId;
                 }
+
+                $newValue .= ($newValue ? NodeProperty::LIST_SEPARATOR : '') . $cloneWidgetId;
             }
 
             $destinationProperty = new NodeProperty($key, $newValue, $sourceProperty->getInherit());
@@ -518,12 +529,12 @@ class NodeModel {
                 $widgetId = substr($propertyKey, 0, $positionPropertySeparator);
                 $propertyKey = substr($propertyKey, $positionPropertySeparator);
 
-                if (!isset($widgetIds[$widgetId])) {
+                if (!isset($this->widgetTable[$widgetId])) {
                     continue;
                 }
 
                 $destinationProperty = new NodeProperty(
-                    Node::PROPERTY_WIDGET . '.' . $widgetIds[$widgetId] . $propertyKey,
+                    Node::PROPERTY_WIDGET . '.' . $this->widgetTable[$widgetId] . $propertyKey,
                     $destinationProperty->getValue(),
                     $destinationProperty->getInherit()
                 );
