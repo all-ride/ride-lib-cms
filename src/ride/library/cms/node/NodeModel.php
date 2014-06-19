@@ -6,6 +6,7 @@ use ride\library\cms\exception\CmsException;
 use ride\library\cms\node\exception\NodeNotFoundException;
 use ride\library\cms\node\io\NodeIO;
 use ride\library\cms\node\type\NodeTypeManager;
+use ride\library\cms\node\type\SiteNodeType;
 use ride\library\cms\node\validator\NodeValidator;
 use ride\library\event\EventManager;
 
@@ -710,6 +711,86 @@ class NodeModel {
         }
 
         return $levels - $nodeLevel;
+    }
+
+    /**
+     * Cleans up all properties and widget instances of unused widgets
+     * @return null
+     */
+    public function cleanUp() {
+        $sites = $this->getNodesByType(SiteNodeType::NAME);
+        foreach ($sites as $site) {
+            $usedWidgets = $site->getAvailableWidgets();
+
+            $nodes = $this->getNodesByPath($site->getId());
+
+            // detect unused widgets
+            $this->checkWidgetUsage($site->getProperties(), $usedWidgets);
+            foreach ($nodes as $node) {
+                $this->checkWidgetUsage($node->getProperties(), $usedWidgets);
+            }
+
+            // clear unused widget properties
+            foreach ($nodes as $node) {
+                if ($this->clearWidgetUsage($node, $usedWidgets)) {
+                    $this->setNode($node, 'Cleaned up ' . $node->getName());
+                }
+            }
+
+            if ($this->clearWidgetUsage($site, $usedWidgets)) {
+                $this->setNode($site, 'Cleaned up ' . $site->getName());
+            }
+        }
+    }
+
+    /**
+     * Checks the usage of the widgets
+     * @param array $properties Array with a NodeProperty as value and the
+     * property name as key
+     * @param array $usedWidgets Array with the widget instance id as key and
+     * the widget id/name as value
+     * @return null
+     */
+    protected function checkWidgetUsage(array $properties, array &$usedWidgets) {
+        foreach ($properties as $key => $property) {
+            if (strpos($key, Node::PROPERTY_WIDGETS . '.') !== 0 || substr_count($key, '.') !== 1) {
+                continue;
+            }
+
+            $widgetIds = explode(',', $property->getValue());
+            foreach ($widgetIds as $widgetId) {
+                if (isset($usedWidgets[$widgetId])) {
+                    unset($usedWidgets[$widgetId]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Cleans up all properties in the provided node which are used one of the
+     * provided widgets
+     * @param \ride\library\cms\node\Node $node
+     * @param array $unusedWidgetd Array with the widget instance id as key
+     * @return boolean Flag to see if the node has changed
+     */
+    protected function clearWidgetUsage(Node $node, array $unusedWidgets) {
+        $isChanged = false;
+
+        $isRootNode = $node->getParent() ? false : true;
+        $properties = $node->getProperties();
+
+        foreach ($unusedWidgets as $widgetId => $null) {
+            foreach ($properties as $key => $property) {
+                if (strpos($key, Node::PROPERTY_WIDGET . '.' . $widgetId . '.') === 0 || ($isRootNode && $key === Node::PROPERTY_WIDGET . '.' . $widgetId)) {
+                    $node->set($key, null);
+
+                    $isChanged = true;
+                }
+
+            }
+        }
+
+        return $isChanged;
     }
 
 }
