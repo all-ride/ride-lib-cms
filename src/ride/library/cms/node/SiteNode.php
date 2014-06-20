@@ -166,7 +166,6 @@ class SiteNode extends Node {
         $this->widgets = $widgets;
     }
 
-
     /**
      * Get the route of this node. The route is used in the frontend as an url
      * alias.
