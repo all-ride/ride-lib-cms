@@ -16,7 +16,7 @@
         "ride/lib-template": ">=0.4.0",
         "ride/lib-system": ">=0.3.1",
         "ride/lib-widget": ">=0.2.0",
-        "shark/simple_html_dom": "1.5.0"
+        "shark/simple_html_dom": "*"
     },
     "autoload": {
         "psr-0": {
