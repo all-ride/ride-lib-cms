@@ -113,14 +113,16 @@ class NodeWidgetProperties implements WidgetProperties {
 
     /**
      * Gets all the properties of the widget
+     * @param string $prefix Prefix of the properties to obtain
      * @return array Array with the properties of the widget
      */
-    public function getWidgetProperties() {
+    public function getWidgetProperties($prefix = null) {
+        $prefix = $this->widgetPropertyPrefix . $prefix;
         $result = array();
 
         $properties = $this->node->getProperties();
         foreach ($properties as $key => $property) {
-            if (strpos($key, $this->widgetPropertyPrefix) === 0) {
+            if (strpos($key, $prefix) === 0) {
                 $result[str_replace($this->widgetPropertyPrefix, '', $key)] = $property->getValue();
             }
         }
@@ -128,20 +130,23 @@ class NodeWidgetProperties implements WidgetProperties {
         return $result;
     }
 
-	/**
-	 * Clear the settings of this widget
-	 * @return null
-	 */
-	public function clearWidgetProperties() {
-	    $properties = $this->node->getProperties();
+    /**
+     * Clears all the properties of the widget
+     * @param string $prefix Prefix of the properties to remove
+     * @return null
+     */
+    public function clearWidgetProperties($prefix = null) {
+        $prefix = $this->widgetPropertyPrefix . $prefix;
 
-	    foreach ($properties as $key => $property) {
-	        if (strpos($key, $this->widgetPropertyPrefix) === 0) {
-	            unset($properties[$key]);
-	        }
-	    }
+        $properties = $this->node->getProperties();
 
-	    $this->node->setProperties($properties);
+        foreach ($properties as $key => $property) {
+            if (strpos($key, $prefix) === 0) {
+                unset($properties[$key]);
+            }
+        }
+
+        $this->node->setProperties($properties);
 	}
 
 	/**
