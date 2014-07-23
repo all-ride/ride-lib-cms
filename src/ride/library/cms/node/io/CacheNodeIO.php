@@ -162,7 +162,7 @@ class CacheNodeIO extends AbstractNodeIO {
                 $output .= '$node->setParent("' . $node->getParent() . '");';
                 $output .= "\n";
             }
-            if ($node->getOrderIndex() !== null) {
+            if ($node->getOrderIndex() !== null && $node->getOrderIndex() !== '') {
                 $output .= '$node->setOrderIndex(' . $node->getOrderIndex() . ');';
                 $output .= "\n";
             }
