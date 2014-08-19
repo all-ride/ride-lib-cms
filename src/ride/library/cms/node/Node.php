@@ -853,8 +853,7 @@ class Node {
      */
     public function isAllowed(User $user = null) {
         $security = $this->get(self::PROPERTY_SECURITY, self::AUTHENTICATION_STATUS_EVERYBODY);
-
-        if ($security === self::AUTHENTICATION_STATUS_EVERYBODY) {
+        if (!$security || $security === self::AUTHENTICATION_STATUS_EVERYBODY) {
             return true;
         }
 
