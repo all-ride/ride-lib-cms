@@ -5,6 +5,7 @@ namespace ride\library\cms\node;
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\widget\NodeWidgetProperties;
 use ride\library\reflection\Boolean;
+use ride\library\security\model\User;
 
 use \DateTime;
 
@@ -96,6 +97,12 @@ class Node {
      * @var unknown_type
      */
     const PROPERTY_ROUTE = 'route';
+
+    /**
+     * Property key for the security flag
+     * @var string
+     */
+    const PROPERTY_SECURITY = 'security';
 
     /**
      * Property key for the theme
@@ -837,6 +844,48 @@ class Node {
         }
 
         return false;
+    }
+
+    /**
+     * Gets whether the provided user is allowed to view this node
+     * @param ride\library\security\model\User $user
+     * @return boolean True if allowed, false otherwise
+     */
+    public function isAllowed(User $user = null) {
+        $security = $this->get(self::PROPERTY_SECURITY, self::AUTHENTICATION_STATUS_EVERYBODY);
+
+        if ($security === self::AUTHENTICATION_STATUS_EVERYBODY) {
+            return true;
+        }
+
+        if ($security === self::AUTHENTICATION_STATUS_ANONYMOUS) {
+            if ($user) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        if (!$user) {
+            return false;
+        }
+
+        if ($security === self::AUTHENTICATION_STATUS_AUTHENTICATED) {
+            return true;
+        }
+
+        $isAllowed = true;
+
+        $permissions = explode(',', $security);
+        foreach ($permissions as $permission) {
+            if (!$user->isPermissionGranted($permission)) {
+                $isAllowed = false;
+
+                break;
+            }
+        }
+
+        return $isAllowed;
     }
 
     /**
