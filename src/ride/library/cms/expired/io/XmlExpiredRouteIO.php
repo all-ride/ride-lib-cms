@@ -13,6 +13,12 @@ use \DOMDocument;
 class XmlExpiredRouteIO implements ExpiredRouteIO {
 
     /**
+     * Name of the file in the site directory
+     * @var string
+     */
+    const FILE = 'expired.xml';
+
+    /**
      * Name of the root tag
      * @var string
      */
@@ -52,23 +58,24 @@ class XmlExpiredRouteIO implements ExpiredRouteIO {
      * File to store the expired paths
      * @var \ride\library\system\file\File
      */
-    private $file;
+    private $directory;
 
     /**
      * Constructs a new expired route IO
      * @param \ride\library\system\file\File $file
      * @return null
      */
-    public function __construct(File $file) {
-        $this->file = $file;
+    public function __construct(File $directory) {
+        $this->directory = $directory;
     }
 
     /**
      * Sets the expired routes to the data source
+     * @param string $site Id of the site
      * @param array $routes Array with ExpiredRoute objects
      * @return null
      */
-    public function setExpiredRoutes(array $routes) {
+    public function setExpiredRoutes($site, array $routes) {
         $dom = new DOMDocument('1.0', 'utf-8');
         $dom->formatOutput = true;
 
@@ -93,25 +100,27 @@ class XmlExpiredRouteIO implements ExpiredRouteIO {
             $expiredElement->appendChild($importedRouteElement);
         }
 
-        $parent = $this->file->getParent();
-        $parent->create();
+        $file = $this->directory->getChild($site . '/' . self::FILE);
+        $file->getParent()->create();
 
-        $dom->save($this->file);
+        $dom->save($file);
     }
 
     /**
      * Gets the expired routes from the data source
+     * @param string $site Id of the site
      * @return array Array with ExpiredRoute objects
      */
-    public function getExpiredRoutes() {
+    public function getExpiredRoutes($site) {
         $routes = array();
 
-        if (!$this->file->exists()) {
+        $file = $this->directory->getChild($site . '/' . self::FILE);
+        if (!$file->exists()) {
             return $routes;
         }
 
         $dom = new DOMDocument();
-        $dom->load($this->file);
+        $dom->load($file);
 
         foreach ($dom->documentElement->childNodes as $element) {
             if ($element->nodeName != self::TAG_ROUTE) {

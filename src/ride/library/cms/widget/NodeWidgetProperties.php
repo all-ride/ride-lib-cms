@@ -120,11 +120,9 @@ class NodeWidgetProperties implements WidgetProperties {
         $prefix = $this->widgetPropertyPrefix . $prefix;
         $result = array();
 
-        $properties = $this->node->getProperties();
+        $properties = $this->node->getProperties($prefix);
         foreach ($properties as $key => $property) {
-            if (strpos($key, $prefix) === 0) {
-                $result[str_replace($this->widgetPropertyPrefix, '', $key)] = $property->getValue();
-            }
+            $result[str_replace($this->widgetPropertyPrefix, '', $key)] = $property->getValue();
         }
 
         return $result;

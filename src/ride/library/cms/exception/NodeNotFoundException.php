@@ -1,8 +1,6 @@
 <?php
 
-namespace ride\library\cms\node\exception;
-
-use ride\library\cms\exception\CmsException;
+namespace ride\library\cms\exception;
 
 /**
  * Exception thrown when a node could not be fuond

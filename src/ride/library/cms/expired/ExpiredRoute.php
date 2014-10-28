@@ -8,25 +8,25 @@ namespace ride\library\cms\expired;
 class ExpiredRoute {
 
     /**
-     * The node id of the route
+     * Node id of the route
      * @var string
      */
     private $node;
 
     /**
-     * The locale of the route
+     * Code of the locale of the route
      * @var string
      */
     private $locale;
 
     /**
-     * The path of the route
+     * Path of the route
      * @var string
      */
     private $path;
 
     /**
-     * The base URL of the route
+     * Base URL of the route
      * @var string
      */
     private $baseUrl;

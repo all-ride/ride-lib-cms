@@ -3,11 +3,12 @@
 namespace ride\library\cms\node;
 
 use ride\library\cms\exception\CmsException;
-use ride\library\cms\node\exception\NodeNotFoundException;
+use ride\library\cms\exception\NodeNotFoundException;
 use ride\library\cms\node\io\NodeIO;
 use ride\library\cms\node\type\NodeTypeManager;
 use ride\library\cms\node\type\SiteNodeType;
 use ride\library\cms\node\validator\NodeValidator;
+use ride\library\cms\node\SiteNode;
 use ride\library\event\EventManager;
 
 /**
@@ -52,6 +53,18 @@ class NodeModel {
     protected $eventManager;
 
     /**
+     * Name of the default revision
+     * @var string
+     */
+    protected $defaultRevision;
+
+    /**
+     * Name of the draft  revision
+     * @var string
+     */
+    protected $draftRevision;
+
+    /**
      * Creates a new node model
      * @param \ride\library\cms\node\type\NodeTypeManager $nodeTypeManager
      * @param \ride\library\cms\node\io\NodeIO $io
@@ -63,6 +76,9 @@ class NodeModel {
         $this->nodeTypeManager = $nodeTypeManager;
         $this->io = $io;
         $this->validator = $validator;
+
+        $this->defaultRevision = 'master';
+        $this->draftRevision = 'draft';
     }
 
     /**
@@ -83,43 +99,141 @@ class NodeModel {
     }
 
     /**
+     * Sets the default revision
+     * @param string $defaultRevision Name of the default revision
+     * @return null
+     */
+    public function setDefaultRevision($defaultRevision) {
+        if (!is_string($defaultRevision) || !$defaultRevision) {
+            throw new CmsException('Could not set the default revision: no string or empty value provided');
+        }
+
+        $this->defaultRevision = $defaultRevision;
+    }
+
+    /**
+     * Gets the default revision
+     * @return string
+     */
+    public function getDefaultRevision() {
+        return $this->defaultRevision;
+    }
+
+    /**
+     * Sets the draft revision
+     * @param string $draftRevision Name of the draft revision
+     * @return null
+     */
+    public function setDraftRevision($draftRevision) {
+        if (!is_string($draftRevision) || !$draftRevision) {
+            throw new CmsException('Could not set the draft revision: no string or empty value provided');
+        }
+
+        $this->draftRevision = $draftRevision;
+    }
+
+    /**
+     * Gets the draft revision
+     * @return string
+     */
+    public function getDraftRevision() {
+        return $this->draftRevision;
+    }
+
+    /**
+     * Gets all the available sites
+     * @return array Array with the id of the site as key and the SiteNode as
+     * value
+     */
+    public function getSites() {
+        return $this->io->getSites();
+    }
+
+    /**
+     * Gets a site
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
+     * @return SiteNode
+     */
+    public function getSite($siteId, $revision, $children = false, $depth = false) {
+        return $this->io->getSite($siteId, $revision, $children, $depth);
+    }
+
+    /**
+     * Gets the current site based on the URL
+     * @param string $baseUrl
+     * @return SiteNode|null
+     */
+    public function getCurrentSite($baseUrl, &$locale = null) {
+        $sites = $this->getSites();
+        foreach ($sites as $siteId => $site) {
+            $locale = $site->getLocaleForBaseUrl($baseUrl);
+            if ($locale !== null) {
+                if (!$site->hasLocalizedBaseUrl()) {
+                    $locale = null;
+                }
+
+                return $site;
+            }
+
+            if (!$site->isPublished()) {
+                unset($sites[$siteId]);
+            }
+        }
+
+        if (count($sites) === 1) {
+            return reset($sites);
+        }
+
+        throw new NodeNotFoundException();
+    }
+
+    /**
      * Gets a node
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
      * @param string $nodeId Id of the node
      * @param boolean $children Set to true to lookup the children of the node
      * @param boolean|integer $depth Number of children levels to fetch, false
      * to fetch all child levels
-     * @return Node
-     * @throw joppa\exception\NodeNotFoundException when the requested node
-     * could not be found
+     * @return \ride\library\cms\node\Node
+     * @throws \ride\library\cms\exception\NodeNotFoundException when the
+     * requested node could not be found
      */
-    public function getNode($nodeId, $type = null, $children = false, $depth = false) {
-        return $this->io->getNode($nodeId, $type, $children, $depth);
+    public function getNode($siteId, $revision, $nodeId, $type = null, $children = false, $depth = false) {
+        return $this->io->getNode($siteId, $revision, $nodeId, $type, $children, $depth);
     }
 
     /**
      * Gets all the nodes
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
      * @return array
      */
-    public function getNodes() {
-        return $this->io->getNodes();
+    public function getNodes($siteId, $revision) {
+        return $this->io->getNodes($siteId, $revision);
     }
 
     /**
      * Gets all the nodes of a certain type
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
      * @param string $type Name of the type
      * @return array
      */
-    public function getNodesByType($type) {
-        return $this->io->getNodesByType($type);
+    public function getNodesByType($siteId, $revision, $type) {
+        return $this->io->getNodesByType($siteId, $revision, $type);
     }
 
     /**
      * Gets all the nodes for a specific path
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
      * @param string $path Materialized path for the nodes
      * @return array Array with Node instances
      */
-    public function getNodesByPath($path) {
-        return $this->io->getNodesByPath($path);
+    public function getNodesByPath($siteId, $revision, $path) {
+        return $this->io->getNodesByPath($siteId, $revision, $path);
     }
 
     /**
@@ -236,10 +350,15 @@ class NodeModel {
      * Saves a node to the data source
      * @param Node $node
      * @param string $description Description of the save action
+     * @param boolean $autoPublish Set to false to skip auto publishing
      * @return null
      */
-    public function setNode(Node $node, $description = null) {
+    public function setNode(Node $node, $description = null, $autoPublish = true) {
         $this->validateNode($node);
+
+        if ($node->getRevision() === $this->defaultRevision) {
+            $node->setRevision($this->draftRevision);
+        }
 
         if ($this->eventManager) {
             if (!$description) {
@@ -260,6 +379,10 @@ class NodeModel {
         if ($this->eventManager) {
             $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
         }
+
+        if ($autoPublish && $node->getRootNode()->isAutoPublish()) {
+            $this->publishNode($node);
+        }
     }
 
     /**
@@ -267,9 +390,14 @@ class NodeModel {
      * @param \ride\library\cms\node\Node $node Node to remove
      * @param boolean $recursive Flag to see if child nodes should be deleted
      * @param string $description Description of the remove action
+     * @param boolean $autoPublish Set to false to skip auto publishing
      * @return
      */
-    public function removeNode(Node $node, $recursive = true, $description = null) {
+    public function removeNode(Node $node, $recursive = true, $description = null, $autoPublish = true) {
+        if ($node->getRevision() === $this->defaultRevision && $node->getLevel() !== 0) {
+            $node->setRevision($this->draftRevision);
+        }
+
         if ($this->eventManager) {
             if (!$description) {
                 $description = 'Removed node ' . $node->getName();
@@ -289,6 +417,10 @@ class NodeModel {
         if ($this->eventManager) {
             $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
         }
+
+        if ($autoPublish && $node->getRootNode()->isAutoPublish()) {
+            $this->publishNode($node);
+        }
     }
 
     /**
@@ -306,118 +438,124 @@ class NodeModel {
      * will occur
      * @param boolean $newParent Provide a new parent for the clone, needed for
      * recursive cloning
+     * @param boolean $autoPublish Set to false to skip auto publishing
      * @return null
      */
-    public function cloneNode(Node $node, $recursive = true, $reorder = true, $keepOriginalName = false, $cloneRoutes = null, $newParent = null) {
-    	$id = $node->getId();
-    	$rootNodeId = $node->getRootNodeId();
+    public function cloneNode(Node $node, $recursive = true, $reorder = true, $keepOriginalName = false, $cloneRoutes = null, $newParent = null, $autoPublish = true) {
+        $id = $node->getId();
+        $rootNodeId = $node->getRootNodeId();
 
-    	if ($id == $rootNodeId) {
-    		$this->cloneTable = array();
-    	}
+        if ($id == $rootNodeId) {
+            $this->cloneTable = array();
+        }
 
-    	if ($cloneRoutes === null) {
-    	    if ($id == $rootNodeId) {
-    	        $cloneRoutes = true;
-    	    } else {
-    	        $cloneRoutes = false;
-    	    }
-    	}
+        if ($cloneRoutes === null) {
+            if ($id == $rootNodeId) {
+                $cloneRoutes = true;
+            } else {
+                $cloneRoutes = false;
+            }
+        }
 
         if ($newParent === null) {
             $this->widgetTable = array();
         }
 
-    	$nodeType = $this->nodeTypeManager->getNodeType($node->getType());
-    	$clone = $nodeType->createNode();
+        $nodeType = $this->nodeTypeManager->getNodeType($node->getType());
+        $clone = $nodeType->createNode();
 
-    	if ($newParent) {
-    		$clone->setParent($newParent);
-    	} else {
+        if ($newParent) {
+            $clone->setParent($newParent);
+        } else {
             $clone->setParent($node->getParent());
-    	}
+        }
 
-    	if ($clone->getParent()) {
-    	    $clone->setParentNode($this->io->getNode($clone->getParentNodeId()));
-    	}
+        if ($clone->getParent()) {
+            $clone->setParentNode($this->io->getNode($clone->getParentNodeId()));
+        }
 
-    	if ($reorder) {
-    		$clone->setOrderIndex($node->getOrderIndex() + 1);
-    	} else {
-    		$clone->setOrderIndex($node->getOrderIndex());
-    	}
+        if ($reorder) {
+            $clone->setOrderIndex($node->getOrderIndex() + 1);
+        } else {
+            $clone->setOrderIndex($node->getOrderIndex());
+        }
 
-    	$this->cloneNodeProperties($node, $clone, $keepOriginalName, $cloneRoutes);
+        $this->cloneNodeProperties($node, $clone, $keepOriginalName, $cloneRoutes);
 
-    	$this->setNode($clone, 'Cloned ' . $node->getName());
+        $this->setNode($clone, 'Cloned ' . $node->getName(), false);
 
-    	if ($reorder) {
-    	    // reorder the siblings after the original node
-    	    $cloneOrderIndex = $clone->getOrderIndex();
+        if ($reorder) {
+            // reorder the siblings after the original node
+            $cloneOrderIndex = $clone->getOrderIndex();
 
-    	    $siblings = $this->io->getChildren($node->getParent(), 0);
-    	    foreach ($siblings as $sibling) {
-    	        $siblingOrderIndex = $sibling->getOrderIndex();
-    	        if ($siblingOrderIndex < $cloneOrderIndex) {
-    	            continue;
-    	        }
+            $siblings = $this->io->getChildren($node->getParent(), 0);
+            foreach ($siblings as $sibling) {
+                $siblingOrderIndex = $sibling->getOrderIndex();
+                if ($siblingOrderIndex < $cloneOrderIndex) {
+                    continue;
+                }
 
-    	        $sibling->setOrderIndex($siblingOrderIndex + 1);
+                $sibling->setOrderIndex($siblingOrderIndex + 1);
 
-    	        $this->setNode($sibling, 'Reordered ' . $sibling->getName() . ' after clone of ' . $node->getName());
-    	    }
-    	}
+                $this->setNode($sibling, 'Reordered ' . $sibling->getName() . ' after clone of ' . $node->getName(), false);
+            }
+        }
 
-    	if ($recursive) {
-    	    // clone the children
-    	    $children = $this->io->getChildren($node->getPath(), 0);
+        if ($recursive) {
+            // clone the children
+            $children = $this->io->getChildren($node->getPath(), 0);
 
             $path = $clone->getPath();
 
-    		foreach ($children as $child) {
-    			$this->cloneNode($child, true, false, true, $cloneRoutes, $path);
-    		}
-    	}
+            foreach ($children as $child) {
+                $this->cloneNode($child, true, false, true, $cloneRoutes, $path, false);
+            }
+        }
 
-    	if (isset($this->cloneTable)) {
-    	    $this->cloneTable[$id] = $clone->getId();
-    	}
+        if (isset($this->cloneTable)) {
+            $this->cloneTable[$id] = $clone->getId();
+        }
 
-    	if ($id == $node->getRootNodeId()) {
-    	    // we are cloning a site, update the node references in the properties
-    	    $nodes = $this->getNodesByPath($clone->getId());
-    	    foreach ($nodes as $node) {
-    	        $hasChanged = false;
+        if ($id == $node->getRootNodeId()) {
+            // we are cloning a site, update the node references in the properties
+            $nodes = $this->getNodesByPath($clone->getId());
+            foreach ($nodes as $node) {
+                $hasChanged = false;
 
-    	        $properties = $node->getProperties();
-    	        foreach ($properties as $key => $property) {
-    	            if (substr($key, -5) != '.node') {
-    	                continue;
-    	            }
+                $properties = $node->getProperties();
+                foreach ($properties as $key => $property) {
+                    if (substr($key, -5) != '.node') {
+                        continue;
+                    }
 
-    	            if (isset($this->cloneTable[$property->getValue()])) {
-    	                $property->setValue($this->cloneTable[$property->getValue()]);
+                    if (isset($this->cloneTable[$property->getValue()])) {
+                        $property->setValue($this->cloneTable[$property->getValue()]);
 
-    	                $hasChanged = true;
-    	            }
-    	        }
+                        $hasChanged = true;
+                    }
+                }
 
-    	        if ($hasChanged) {
-    	            $this->setNode($node, "Updated node references for clone of " . $node->getName());
-    	        }
-    	    }
+                if ($hasChanged) {
+                    $this->setNode($node, "Updated node references for clone of " . $node->getName(), false);
+                }
+            }
 
-    	    unset($this->cloneTable);
-    	}
+            unset($this->cloneTable);
+        }
 
         if ($newParent === null) {
             unset($this->widgetTable);
         }
 
-    	// save the root for newly created widgets
-    	$this->setNode($clone->getRootNode(), 'Updated widgets for clone of ' . $node->getName());
+        // save the root for newly created widgets
+        $this->setNode($clone->getRootNode(), 'Updated widgets for clone of ' . $node->getName(), false);
 
-    	return $clone;
+        // perform auto publishing if enabled
+        if ($autoPublish && $node->getRootNode()->isAutoPublish()) {
+            $this->publishNode($node);
+        }
+
+        return $clone;
     }
 
     /**
@@ -549,12 +687,16 @@ class NodeModel {
 
     /**
      * Reorder the nodes of a site
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
      * @param integer $parent Id of the parent node
      * @param array $nodeOrder Array with the node id as key and the number of children as value
+     * @param boolean $autoPublish Set to false to skip auto publishing
      * @return null
      */
-    public function orderNodes($parent, array $nodeOrder) {
-        $parent = $this->io->getNode($parent);
+    public function orderNodes($siteId, $revision, $parent, array $nodeOrder, $locale, $autoPublish = true) {
+        $parent = $this->io->getNode($siteId, $revision, $parent);
+        $site = $parent->getRootNode();
 
         $path = $parent->getPath();
         $orderIndex = 1;
@@ -565,8 +707,9 @@ class NodeModel {
         $children = array();
         $saveNodes = array();
 
-        $nodes = $this->io->getNodesByPath($path);
+        $nodes = $this->io->getNodesByPath($siteId, $revision, $path);
 
+        // process the provided order on the nodes
         foreach ($nodeOrder as $nodeId => $numChildren) {
             if (!isset($nodes[$nodeId])) {
                 throw new CmsException('Could not order the nodes: Node with id ' . $nodeId . ' is not a child of node ' . $parent->getId());
@@ -602,10 +745,42 @@ class NodeModel {
             unset($nodes[$nodeId]);
         }
 
+        // check remaining nodes
         if ($nodes) {
-            throw new CmsException('Could not order the nodes: not all nodes of the provided parent are provided in the node order array; missing nodes ' . implode(', ', array_keys($nodes)));
+            if ($site->isLocalizationMethodUnique()) {
+                $siblingOrder = array();
+
+                foreach ($nodes as $nodeId => $node) {
+                    if ($node->getParent() != $path || $node->isAvailableInLocale($locale)) {
+                        continue;
+                    }
+
+                    $siblingOrder[$node->getOrderIndex()] = $node;
+
+                    $id = $node->getId();
+                    foreach ($nodes as $nodeId => $node) {
+                        if ($nodeId === $id || $node->hasParent($id)) {
+                            unset($nodes[$nodeId]);
+                        }
+                    }
+                }
+
+                ksort($siblingOrder);
+                foreach ($siblingOrder as $sibling) {
+                    $sibling->setOrderIndex($orderIndex);
+
+                    $saveNodes[] = $sibling;
+
+                    $orderIndex++;
+                }
+            }
+
+            if ($nodes) {
+                throw new CmsException('Could not order the nodes: not all nodes of the provided parent are provided in the node order array; missing nodes ' . implode(', ', array_keys($nodes)));
+            }
         }
 
+        // pre save event
         if ($this->eventManager) {
             $eventArguments = array(
                 'action' => 'order',
@@ -616,12 +791,19 @@ class NodeModel {
             $this->eventManager->triggerEvent(self::EVENT_PRE_ACTION, $eventArguments);
         }
 
+        // save changes
         foreach ($saveNodes as $node) {
             $this->io->setNode($node);
         }
 
+        // post save event
         if ($this->eventManager) {
             $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
+        }
+
+        // perform auto publishing if enabled
+        if ($autoPublish && $site->isAutoPublish()) {
+            $this->publishNode($parent);
         }
     }
 
@@ -703,7 +885,7 @@ class NodeModel {
         $path = $node->getPath();
         $levels = 0;
 
-        $nodes = $this->getNodesByPath($path);
+        $nodes = $this->getNodesByPath($node->getRootNodeId(), $node->getRevision(), $path);
         foreach ($nodes as $node) {
             $parent = $node->getParent();
             $level = strlen($parent) - strlen(str_replace(Node::PATH_SEPARATOR, '', $parent)) + 1;
@@ -714,31 +896,85 @@ class NodeModel {
     }
 
     /**
+     * Publish a node or site
+     * @param \ride\library\cms\node\Node $node Node to publish
+     * @param string $revision Name of the published revision, falls back to the
+     * default revision
+     * @param boolean $recursive Flag to see if the node's children should be
+     * published as well
+     * @return null
+     */
+    public function publishNode(Node $node, $revision = null, $recursive = true) {
+        if ($revision === null) {
+            $revision = $this->getDefaultRevision();
+        }
+
+        $this->io->publish($node, $revision, $recursive);
+    }
+
+    /**
+     * Gets the trash of a site
+     * @param string $siteId Id of the site
+     * @return array Array with the id of the trash node as key and a TrashNode
+     * instance as value
+     */
+    public function getTrashNodes($siteId) {
+        return $this->io->getTrashNodes($siteId);
+    }
+
+    /**
+     * Gets a node from the trash of a site
+     * @param string $siteId Id of the site
+     * @param string $trashNodeId Id of the trash node
+     * @return \ride\library\cms\node\TrashNode
+     * @throws \ride\library\cms\exception\NodeNotFoundException
+     */
+    public function getTrashNode($siteId, $trashNodeId) {
+        return $this->io->getTrashNode($siteId, $trashNodeId);
+    }
+
+    /**
+     * Restores the provided node or array of nodes
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
+     * @param \ride\library\cms\node\TrashNode|array $trashNodes An instance of
+     * TrashNode or an array of trash nodes
+     * @param string $newParent Id of the new parent
+     * @return null
+     */
+    public function restoreTrashNodes($siteId, $revision, $trashNodes, $newParent = null) {
+        return $this->io->restoreTrashNodes($siteId, $revision, $trashNodes, $newParent);
+    }
+
+    /**
      * Cleans up all properties and widget instances of unused widgets
      * @return null
      */
     public function cleanUp() {
-        $sites = $this->getNodesByType(SiteNodeType::NAME);
-        foreach ($sites as $site) {
-            $usedWidgets = $site->getAvailableWidgets();
+        $sites = $this->getSites();
+        foreach ($sites as $siteId => $site) {
+            $revisions = $site->getRevisions();
+            foreach ($revisions as $revision) {
+                $usedWidgets = $site->getAvailableWidgets();
 
-            $nodes = $this->getNodesByPath($site->getId());
+                $nodes = $this->getNodesByPath($siteId, $revision, $siteId);
 
-            // detect unused widgets
-            $this->checkWidgetUsage($site->getProperties(), $usedWidgets);
-            foreach ($nodes as $node) {
-                $this->checkWidgetUsage($node->getProperties(), $usedWidgets);
-            }
-
-            // clear unused widget properties
-            foreach ($nodes as $node) {
-                if ($this->clearWidgetUsage($node, $usedWidgets)) {
-                    $this->setNode($node, 'Cleaned up ' . $node->getName());
+                // detect unused widgets
+                $this->checkWidgetUsage($site->getProperties(), $usedWidgets);
+                foreach ($nodes as $node) {
+                    $this->checkWidgetUsage($node->getProperties(), $usedWidgets);
                 }
-            }
 
-            if ($this->clearWidgetUsage($site, $usedWidgets)) {
-                $this->setNode($site, 'Cleaned up ' . $site->getName());
+                // clear unused widget properties
+                foreach ($nodes as $node) {
+                    if ($this->clearWidgetUsage($node, $usedWidgets)) {
+                        $this->setNode($node, 'Cleaned up ' . $node->getName(), false);
+                    }
+                }
+
+                if ($this->clearWidgetUsage($site, $usedWidgets)) {
+                    $this->setNode($site, 'Cleaned up ' . $site->getName(), false);
+                }
             }
         }
     }
