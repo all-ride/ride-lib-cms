@@ -28,10 +28,22 @@ class SiteNode extends Node {
     const PROPERTY_LOCALIZATION_METHOD = 'l10n';
 
     /**
+     * Property key for auto publish
+     * @var string
+     */
+    const PROPERTY_AUTO_PUBLISH = 'autopublish';
+
+    /**
      * Property key for the base url
      * @var string
      */
     const PROPERTY_BASE_URL = 'url';
+
+    /**
+     * Available revisions of this site
+     * @var array
+     */
+    protected $revisions;
 
     /**
      * Array with the widget instance id as key and the widget id as value
@@ -54,8 +66,11 @@ class SiteNode extends Node {
 
         $this->defaultInherit = true;
 
+        $this->set(self::PROPERTY_AUTO_PUBLISH, 0, true);
         $this->set(Node::PROPERTY_PUBLISH, 1, true);
+        $this->set(Node::PROPERTY_SECURITY, Node::AUTHENTICATION_STATUS_EVERYBODY, true);
 
+        $this->revisions = array();
         $this->widgets = array();
     }
 
@@ -74,6 +89,22 @@ class SiteNode extends Node {
      */
     public function getLocalizationMethod() {
         return $this->get(self::PROPERTY_LOCALIZATION_METHOD, self::LOCALIZATION_METHOD_COPY);
+    }
+
+    /**
+     * Gets whether this site has a copy localization method
+     * @return boolean
+     */
+    public function isLocalizationMethodCopy() {
+        return $this->getLocalizationMethod() == self::LOCALIZATION_METHOD_COPY;
+    }
+
+    /**
+     * Gets whether this site has a unique localization method
+     * @return boolean
+     */
+    public function isLocalizationMethodUnique() {
+        return $this->getLocalizationMethod() == self::LOCALIZATION_METHOD_UNIQUE;
     }
 
     /**
@@ -96,6 +127,46 @@ class SiteNode extends Node {
     }
 
     /**
+     * Gets the locale of the site for the provided URL
+     * @param string $baseUrl Base URL to resolve
+     * @return string|null Locale code if the base URL is set for this site,
+     * null otherwise
+     */
+    public function getLocaleForBaseUrl($baseUrl) {
+        $properties = $this->getProperties(self::PROPERTY_BASE_URL);
+
+        foreach ($properties as $key => $property) {
+            if ($property->getValue() !== $baseUrl) {
+                continue;
+            }
+
+            return str_replace(self::PROPERTY_BASE_URL . '.', '', $key);
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks îf this site has a different base URL for the different locales
+     * @return boolean
+     */
+    public function hasLocalizedBaseUrl() {
+        $baseUrl = null;
+
+        $properties = $this->getProperties(self::PROPERTY_BASE_URL);
+
+        foreach ($properties as $key => $property) {
+            if ($baseUrl === null) {
+                $baseUrl = $property->getValue();
+            } elseif ($property->getValue() !== $baseUrl) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Sets a property
      * @param NodeProperty $property
      * @return null
@@ -107,6 +178,49 @@ class SiteNode extends Node {
         if (strpos($key, Node::PROPERTY_WIDGET) === 0 && strrpos($key, '.') === 6) {
             $this->widgets[substr($key, 7)] = $property->getValue();
         }
+    }
+
+    /**
+     * Sets the available revisions of this site
+     * @param array $revisions
+     * @return null
+     */
+    public function setRevisions(array $revisions) {
+        $this->revisions = $revisions;
+    }
+
+    /**
+     * Gets the available revisions of this site
+     * @return array
+     */
+    public function getRevisions() {
+        return $this->revisions;
+    }
+
+    /**
+     * Checks if this site has a certain revision
+     * @param string $revision Name of the revision
+     * @return boolean
+     */
+    public function hasRevision($revision) {
+        return isset($this->revisions[$revision]);
+    }
+
+    /**
+     * Sets whether this site will be auto published
+     * @param boolean $îsAutoPublish
+     * @return null
+     */
+    public function setIsAutoPublish($isAutoPublish) {
+        $this->set(self::PROPERTY_AUTO_PUBLISH, $isAutoPublish ? 1 : 0);
+    }
+
+    /**
+     * Gets whether this site will be auto published
+     * @return boolean
+     */
+    public function isAutoPublish() {
+        return $this->get(self::PROPERTY_AUTO_PUBLISH);
     }
 
     /**

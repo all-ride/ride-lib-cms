@@ -50,7 +50,7 @@ class GenericNodeValidator implements NodeValidator {
         $nodeId = $node->getId();
         $rootNodeId = $node->getRootNodeId();
 
-        $modelNodes = $nodeModel->getNodes();
+        $modelNodes = $nodeModel->getNodes($rootNodeId, $node->getRevision());
 
         $propertyPrefix = Node::PROPERTY_ROUTE . '.';
         $lengthPropertyPrefix = strlen($propertyPrefix);

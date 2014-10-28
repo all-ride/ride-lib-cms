@@ -5,6 +5,7 @@ namespace ride\library\cms\node\structure;
 use ride\library\cms\node\type\PageNodeType;
 use ride\library\cms\node\NodeModel;
 use ride\library\cms\node\Node;
+use ride\library\cms\node\SiteNode;
 
 /**
  * Parser for node structure from and into text format
@@ -14,14 +15,24 @@ class GenericNodeStructureParser implements NodeStructureParser {
     /**
      * Gets the node tree in a text format
      * @param string $locale Locale of the structure
-     * @param \ride\library\cms\node\Node $site Site node
-     * @return string Site node tree in text format
+     * @param \ride\library\cms\node\Node $parent Parent node of the structure
+     * @return string Node tree in text format
      */
-    public function getStructure($locale, Node $site) {
+    public function getStructure($locale, Node $parent) {
+        if ($parent->getRootNode()->isLocalizationMethodUnique()) {
+            $isUniqueTree = true;
+        } else {
+            $isUniqueTree = false;
+        }
+
         $structure = '';
 
-        $children = $site->getChildren();
+        $children = $parent->getChildren();
         foreach ($children as $child) {
+            if ($isUniqueTree && !$child->isAvailableInLocale($locale)) {
+                continue;
+            }
+
             $structure .= $child->getName($locale);
             $structure .= ' [' . $child->getRoute($locale) . '|' . $child->getType() . '|' . $child->getId() . ']';
             $structure .= "\n";
@@ -38,13 +49,20 @@ class GenericNodeStructureParser implements NodeStructureParser {
     /**
      * Saves the node tree from the structure in text format
      * @param string $locale Locale of the structure
-     * @param \ride\library\cms\node\Node $site Site node
+     * @param \ride\library\cms\node\Node $parent Parent node of the structure
      * @param \ride\library\cms\node\NodeModel $nodeModel Instance of the node
      * model
-     * @param string $structure Site node tree in text format
+     * @param string $structure Node tree in text format
      * @return null
      */
-    public function setStructure($locale, Node $site, NodeModel $nodeModel, $structure) {
+    public function setStructure($locale, Node $parent, NodeModel $nodeModel, $structure) {
+        $site = $parent->getRootNode();
+        if ($site->isLocalizationMethodUnique()) {
+            $isUniqueTree = true;
+        } else {
+            $isUniqueTree = false;
+        }
+
         $previousNodeId = null;
         $previousSpaces = null;
 
@@ -61,7 +79,7 @@ class GenericNodeStructureParser implements NodeStructureParser {
 
         $structure = $this->parseStructure($structure);
         foreach ($structure as $index => $nodeArray) {
-            $structure[$index]['node'] = $this->saveNode($locale, $site, $nodeModel, $nodeArray);
+            $structure[$index]['node'] = $this->saveNode($locale, $site, $nodeModel, $nodeArray, $isUniqueTree);
             $structure[$index]['id'] = $structure[$index]['node']->getId();
 
             if ($previousSpaces === null) {
@@ -90,31 +108,31 @@ class GenericNodeStructureParser implements NodeStructureParser {
             $previousSpaces = $nodeArray['spaces'];
         }
 
-        $siteNodes = $nodeModel->getNodesByPath($site->getId());
-        foreach ($siteNodes as $siteNode) {
-            if (isset($order[$siteNode->getId()])) {
+        $siblings = $nodeModel->getNodesByPath($site->getId(), $site->getRevision(), $parent->getId());
+        foreach ($siblings as $siblingId => $sibling) {
+            if (isset($order[$siblingId]) || ($isUniqueTree && !$sibling->isAvailableInLocale($locale))) {
                 continue;
             }
 
-            $nodeModel->removeNode($siteNode, false);
+            $nodeModel->removeNode($sibling, false);
         }
 
-        unset($order[$site->getId()]);
+        unset($order[$parent->getId()]);
 
-        $nodeModel->orderNodes($site->getId(), $order);
+        $nodeModel->orderNodes($site->getId(), $site->getRevision(), $parent->getId(), $order, $locale);
     }
 
     /**
      * Saves the node in the model
      * @param string $locale Locale of the structure
-     * @param \ride\library\cms\node\Node $site Site node
+     * @param \ride\library\cms\node\SiteNode $site Site node
      * @param \ride\library\cms\node\NodeModel $nodeModel
      * @param array $nodeArray
      * @return \ride\library\cms\node\Node
      */
-    protected function saveNode($locale, Node $site, NodeModel $nodeModel, array $nodeArray) {
+    protected function saveNode($locale, SiteNode $site, NodeModel $nodeModel, array $nodeArray, $isUniqueTree) {
         if (isset($nodeArray['id']) && $nodeArray['id']) {
-            $node = $nodeModel->getNode($nodeArray['id']);
+            $node = $nodeModel->getNode($site->getId(), $site->getRevision(), $nodeArray['id']);
         } else {
             $type = $nodeArray['type'];
             if (!$type) {
@@ -123,6 +141,11 @@ class GenericNodeStructureParser implements NodeStructureParser {
 
             $node = $nodeModel->createNode($type);
             $node->setParentNode($site);
+            $node->setRevision($site->getRevision());
+
+            if ($isUniqueTree) {
+                $node->setAvailableLocales($locale);
+            }
 
             if ($type == PageNodeType::NAME) {
                 $node->setLayout($locale, 'single');

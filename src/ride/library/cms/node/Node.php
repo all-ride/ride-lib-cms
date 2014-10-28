@@ -128,29 +128,35 @@ class Node {
      */
     protected $type;
 
-	/**
-	 * Materialized path of the parent node
-	 * @var string
-	 */
-	protected $parentPath;
+    /**
+     * Materialized path of the parent node
+     * @var string
+     */
+    protected $parentPath;
 
-	/**
-	 * Node of the parent
-	 * @var Node
-	 */
-	protected $parentNode;
+    /**
+     * Node of the parent
+     * @var Node
+     */
+    protected $parentNode;
 
     /**
      * Id of the node
      * @var string
      */
-	protected $id;
+    protected $id;
 
-	/**
-	 * Order index within the parent
-	 * @var integer
-	 */
-	protected $orderIndex;
+    /**
+     * Order index within the parent
+     * @var integer
+     */
+    protected $orderIndex;
+
+    /**
+     * Revision of the node
+     * @var string
+     */
+    protected $revision;
 
 	/**
 	 * The properties of this node
@@ -182,12 +188,13 @@ class Node {
 	 * @return null
 	 */
 	public function __construct($type) {
-	    $this->type = $type;
-	    $this->id = false;
+        $this->type = $type;
+        $this->id = false;
 
-	    $this->parentPath = '';
-	    $this->parentNode = null;
-	    $this->orderIndex = null;
+        $this->parentPath = '';
+        $this->parentNode = null;
+        $this->orderIndex = null;
+        $this->revision = null;
 
         $this->properties = array();
         $this->defaultInherit = false;
@@ -399,6 +406,54 @@ class Node {
     }
 
     /**
+     * Gets a child by it's route
+     * @param string $locale Code of the locale
+     * @param string $route Route to find a child for
+     * @return Node|null
+     */
+    public function getChildByRoute($route, &$locale, array $locales) {
+        if (!$this->children) {
+            return null;
+        }
+
+        foreach ($this->children as $child) {
+            // check custom route and default routes
+            foreach ($locales as $l) {
+                if ($child->getRoute($l) === $route) {
+                    $locale = $l;
+
+                    return $child;
+                }
+            }
+
+            // check children
+            $child = $child->getChildByRoute($route, $locale, $locales);
+            if ($child) {
+                return $child;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets the revision of this node
+     * @param string $revision Revision of this node
+     * @return null
+     */
+    public function setRevision($revision) {
+        $this->revision = $revision;
+    }
+
+    /**
+     * Gets the revision of this node
+     * @return string
+     */
+    public function getRevision() {
+        return $this->revision;
+    }
+
+    /**
      * Sets the default inherit value
      * @param boolean $defaultInherit
      * @return null
@@ -532,8 +587,22 @@ class Node {
      * @return array Array with the property key as key and a NodeProperty
      * instance as value
      */
-    public function getProperties() {
-        return $this->properties;
+    public function getProperties($prefix = null) {
+        if ($prefix === null) {
+            return $this->properties;
+        }
+
+        $result = array();
+
+        foreach ($this->properties as $key => $property) {
+            if (strpos($key, $prefix) !== 0) {
+                continue;
+            }
+
+            $result[$key] = $property;
+        }
+
+        return $result;
     }
 
     /**
@@ -1148,6 +1217,27 @@ class Node {
         }
 
         $this->set($widgetsKey, $widgetsValue);
+    }
+
+    /**
+     * Gets the used widgets of this node
+     * @return array Array with the widget instance id as key and value
+     */
+    public function getUsedWidgets() {
+        $widgets = array();
+
+        $regionProperties = $this->getProperties(self::PROPERTY_WIDGETS);
+        foreach ($regionProperties as $regionProperty) {
+            $regionWidgets = explode(NodeProperty::LIST_SEPARATOR, $regionProperty->getValue());
+
+            foreach ($regionWidgets as $widgetId) {
+                $widgetId = trim($widgetId);
+
+                $widgets[$widgetId] = $widgetId;
+            }
+        }
+
+        return $widgets;
     }
 
     /**
