@@ -553,14 +553,19 @@ class IniNodeIO extends AbstractNodeIO {
         $nodeId = $node->getId();
 
         $publishDirectory = $this->path->getChild($siteId . '/' . $revision);
-        $publishDirectoryExists = $publishDirectory->exists();
 
-        if ($publishDirectoryExists) {
-            // publish revsion exists, archive the revision before publishing
-            $archiveDirectory = $this->path->getChild($siteId . '/' . $this->archiveName . '/' . date('YmdHis'));
+        if (!$publishDirectory->exists()) {
+            // first publish
+            $sourceDirectory = $this->path->getChild($siteId . '/' . $node->getRevision());
+            $sourceDirectory->copy($publishDirectory);
 
-            $publishDirectory->copy($archiveDirectory);
+            return;
         }
+
+        // publish revsion exists, archive the revision before publishing
+        $archiveDirectory = $this->path->getChild($siteId . '/' . $this->archiveName . '/' . date('YmdHis'));
+
+        $publishDirectory->copy($archiveDirectory);
 
         // publish node
         $this->publishNode($site, $node, $revision, $publishDirectory, false);
