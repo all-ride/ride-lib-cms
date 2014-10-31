@@ -340,6 +340,15 @@ class Cms {
     }
 
     /**
+     * Gets the number of children levels for the provided node
+     * @param \ride\library\cms\node\Node $node
+     * @return integer
+     */
+    public function getChildrenLevels(Node $node) {
+        return $this->nodeModel->getChildrenLevels($node);
+    }
+
+    /**
      * Gets a list of the available nodes
      * @param \ride\library\cms\node\Node $node Root node for the list
      * @param string $locale Code of the locale
