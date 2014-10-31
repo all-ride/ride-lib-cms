@@ -161,7 +161,8 @@ class NodeModel {
 
     /**
      * Gets the current site based on the URL
-     * @param string $baseUrl
+     * @param string $baseUrl Base URL to get a site for
+     * @param string locale Resolved locale will be store in this variable
      * @return SiteNode|null
      */
     public function getCurrentSite($baseUrl, &$locale = null) {

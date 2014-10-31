@@ -151,6 +151,16 @@ class Cms {
     }
 
     /**
+     * Gets the current site based on the URL
+     * @param string $baseUrl Base URL to get a site for
+     * @param string locale Resolved locale will be store in this variable
+     * @return SiteNode|null
+     */
+    public function getCurrentSite($baseUrl, &$locale = null) {
+        return $this->nodeModel->getCurrentSite($baseUrl, $locale);
+    }
+
+    /**
      * Creates a new node
      * @param string $type
      * @param \ride\library\cms\node\Node $parent
@@ -268,7 +278,11 @@ class Cms {
      * @return boolean True when the node is succesfully resolved, false if
      * the node could not be found, the response code will be set to 404
      */
-    public function resolveNode(&$site, $revision, &$node = null, $type = null, $children = false) {
+    public function resolveNode(&$site, $revision = null, &$node = null, $type = null, $children = false) {
+        if ($revision == null) {
+            $revision = $this->nodeModel->getDefaultRevision();
+        }
+
         try {
             $site = $this->nodeModel->getSite($site, $revision);
             if ($node) {
@@ -349,6 +363,23 @@ class Cms {
         }
 
         return $options;
+    }
+
+    /**
+     * Gets the node type manager
+     * @return \ride\library\cms\node\type\NodeTypeManager
+     */
+    public function getNodeTypeManager() {
+        return $this->nodeModel->getNodeTypeManager();
+    }
+
+    /**
+     * Gets the node types
+     * @return array Array with the name of the node type as key and a NodeType
+     * instance as value
+     */
+    public function getNodeTypes() {
+        return $this->getNodeTypeManager()->getNodeTypes();
     }
 
     /**
