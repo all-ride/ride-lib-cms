@@ -137,6 +137,11 @@ class IniNodeIO extends AbstractNodeIO {
             }
 
             $siteId = $siteDirectory->getName();
+            if ($siteId[0] == '.') {
+                // hidden directory
+                continue;
+            }
+
             $revisions = array();
 
             $files = $siteDirectory->read();
