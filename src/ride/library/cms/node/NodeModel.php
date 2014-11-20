@@ -240,51 +240,61 @@ class NodeModel {
     /**
      * Gets all the nodes which contain a certain widget
      * @param string $widget Name of the widget (dependency id)
-     * @param string $site Id of the site node
+     * @param string $siteId Id of the site
+     * @param string $locale Code of the locale
      * @return array
      */
-    public function getNodesForWidget($widget, $site = null, $locale = null) {
-        $nodes = $this->io->getNodes();
+    public function getNodesForWidget($widget, $siteId = null, $revision = null, $locale = null) {
+        $result = array();
 
-        if ($site && !isset($nodes[$site])) {
-            throw new NodeNotFoundException($site);
+        $sites = $this->getSites();
+        foreach ($sites as $site) {
+            if ($siteId && $site->getId() != $siteId) {
+                continue;
+            }
+
+            if ($revision) {
+                if (!$site->hasRevision($revision)) {
+                    continue;
+                }
+
+                $siteRevision = $revision;
+            } else {
+                $siteRevision = $site->getRevision();
+            }
+
+            $result += $this->getSiteNodesForWidget($site->getId(), $siteRevision, $widget, $locale);
         }
 
-        if ($site) {
-            $sites = array($site => $nodes[$site]);
-        } else {
-            $sites = $this->getNodesByType('site');
+        return $result;
+    }
+
+    public function getSiteNodesForWidget($siteId, $revision, $widget, $locale = null) {
+        $result = array();
+
+        $site = $this->getSite($siteId, $revision);
+        if (!$site) {
+            throw new NodeNotFoundException($siteId);
         }
 
         $availableWidgets = array();
 
-        foreach ($sites as $site) {
-            $widgetIds = $site->getAvailableWidgets();
-            foreach ($widgetIds as $widgetId => $widgetType) {
-                if ($widgetType != $widget) {
-                    continue;
-                }
-
-                $availableWidgets[$widgetId] = $widgetType;
-            }
-        }
-
-        if (!$availableWidgets) {
-            return array();
-        }
-
-        $result = array();
-
-        foreach ($nodes as $index => $node) {
-            if (!isset($sites[$node->getRootNodeId()])) {
-                unset($nodes[$index]);
-
+        $widgetIds = $site->getAvailableWidgets();
+        foreach ($widgetIds as $widgetId => $widgetType) {
+            if ($widgetType != $widget) {
                 continue;
             }
 
-            if ($locale && !$node->isAvailableInLocale($locale)) {
-                unset($nodes[$index]);
+            $availableWidgets[$widgetId] = $widgetType;
+        }
 
+        if (!$availableWidgets) {
+            return $result;
+        }
+
+        $nodes = $this->io->getNodes($siteId, $revision);
+        foreach ($nodes as $index => $node) {
+            if ($locale && !$node->isAvailableInLocale($locale)) {
                 continue;
             }
 
