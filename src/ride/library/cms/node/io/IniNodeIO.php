@@ -199,6 +199,8 @@ class IniNodeIO extends AbstractNodeIO {
             return $nodes;
         }
 
+        $sites = $this->getSites();
+
         $files = $directory->read();
         foreach ($files as $file) {
             if ($file->isDirectory() || $file->getExtension() != 'ini') {
@@ -220,7 +222,7 @@ class IniNodeIO extends AbstractNodeIO {
         // set the parent node instances and site revisions
         foreach ($nodes as $node) {
             if ($node->getType() === SiteNodeType::NAME) {
-                $node->setRevisions($this->sites[$node->getId()]->getRevisions());
+                $node->setRevisions($sites[$node->getId()]->getRevisions());
             }
 
             $parentId = $node->getParentNodeId();
