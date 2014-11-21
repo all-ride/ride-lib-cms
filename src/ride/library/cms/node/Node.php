@@ -416,13 +416,19 @@ class Node {
             return null;
         }
 
+        $result = array();
+
         foreach ($this->children as $child) {
             // check custom route and default routes
             foreach ($locales as $l) {
-                if ($child->getRoute($l) === $route) {
+                $childRoute = $child->getRoute($l);
+                if (strpos($route, $childRoute) === 0) {
+                    $result[] = array(
+                        'node' => $child,
+                        'locale' => $l,
+                        'length' => strlen($childRoute),
+                    );
                     $locale = $l;
-
-                    return $child;
                 }
             }
 
@@ -433,7 +439,18 @@ class Node {
             }
         }
 
-        return null;
+        $node = null;
+        $routeLength = -1;
+
+        foreach ($result as $nodeArray) {
+            if ($routeLength == -1 || $nodeArray['length'] > $routeLength) {
+                $node = $nodeArray['node'];
+                $locale = $nodeArray['locale'];
+                $routeLength = $nodeArray['length'];
+            }
+        }
+
+        return $node;
     }
 
     /**
