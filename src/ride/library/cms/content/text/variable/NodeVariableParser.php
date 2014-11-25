@@ -60,7 +60,8 @@ class NodeVariableParser extends AbstractVariableParser {
                 }
 
                 try {
-                    $node = $this->nodeModel->getNode($tokens[1], 0);
+                    $selfNode = $this->textParser->getNode();
+                    $node = $this->nodeModel->getNode($selfNode->getRootNodeId(), $selfNode->getRevision(), $tokens[1]);
                 } catch (NodeNotFoundException $exception) {
                     return null;
                 }
