@@ -429,7 +429,8 @@ class NodeModel {
             $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
         }
 
-        if ($autoPublish && $node->getRootNode()->isAutoPublish()) {
+        $rootNode = $node->getRootNode();
+        if ($autoPublish && $node->getId() != $rootNode->getId() && $rootNode->isAutoPublish()) {
             $this->publishNode($node);
         }
     }
