@@ -31,8 +31,6 @@ class Cms {
         $this->layoutModel = $layoutModel;
         $this->widgetModel = $widgetModel;
         $this->securityManager = $securityManager;
-
-        $this->user = $securityManager->getUser();
     }
 
     /**
