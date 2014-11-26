@@ -100,7 +100,7 @@ abstract class AbstractNodeIO implements NodeIO {
             throw new NodeNotFoundException();
         }
 
-        if ($children && $node->getChildren() === null) {
+        if ($children) {
             $node->setChildren($this->getChildren($siteId, $node->getRevision(), $node->getPath(), $depth));
         }
 
