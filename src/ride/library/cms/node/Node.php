@@ -75,6 +75,18 @@ class Node {
     const PROPERTY_HIDE_BREADCRUMBS = 'hide.breadcrumbs';
 
     /**
+     * Property key for the hide for anonymous users flag
+     * @var string
+     */
+    const PROPERTY_HIDE_ANONYMOUS = 'hide.anonymous';
+
+    /**
+     * Property key for the hide for authenticated users flag
+     * @var string
+     */
+    const PROPERTY_HIDE_AUTHENTICATED = 'hide.authenticated';
+
+    /**
      * Property key for the publish flag
      * @var string
      */
@@ -839,6 +851,44 @@ class Node {
      */
     public function hideInMenu() {
         return $this->get(self::PROPERTY_HIDE_MENU);
+    }
+
+    /**
+     * Sets whether to hide this node for anonymous users
+     * @param boolean $flag True to hide, false to show
+     * @param boolean|null $inherit True to inherit this setting to lower
+     * levels, false to not inherit and null to use the previous inherit state
+     * @return null
+     */
+    public function setHideForAnonymousUsers($flag, $inherit = null) {
+        $this->set(self::PROPERTY_HIDE_ANONYMOUS, $flag ? 1 : 0, $inherit);
+    }
+
+    /**
+     * Gets whether to hide this node for anonymous users
+     * @return boolean
+     */
+    public function hideForAnonymousUsers() {
+        return $this->get(self::PROPERTY_HIDE_ANONYMOUS);
+    }
+
+    /**
+     * Sets whether to hide this node for authenticated users
+     * @param boolean $flag True to hide, false to show
+     * @param boolean|null $inherit True to inherit this setting to lower
+     * levels, false to not inherit and null to use the previous inherit state
+     * @return null
+     */
+    public function setHideForAuthenticatedUsers($flag, $inherit = null) {
+        $this->set(self::PROPERTY_HIDE_AUTHENTICATED, $flag ? 1 : 0, $inherit);
+    }
+
+    /**
+     * Gets whether to hide this node for authenticated users
+     * @return boolean
+     */
+    public function hideForAuthenticatedUsers() {
+        return $this->get(self::PROPERTY_HIDE_AUTHENTICATED);
     }
 
     /**
