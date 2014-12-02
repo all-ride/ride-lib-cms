@@ -114,7 +114,7 @@ class GenericNodeStructureParser implements NodeStructureParser {
                 continue;
             }
 
-            $nodeModel->removeNode($sibling, false);
+            $nodeModel->removeNode($sibling, false, null, false);
         }
 
         unset($order[$parent->getId()]);

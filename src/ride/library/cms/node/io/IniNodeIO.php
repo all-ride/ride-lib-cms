@@ -571,7 +571,6 @@ class IniNodeIO extends AbstractNodeIO {
 
         // publish revsion exists, archive the revision before publishing
         $archiveDirectory = $this->path->getChild($siteId . '/' . $this->archiveName . '/' . date('YmdHis'));
-
         $publishDirectory->copy($archiveDirectory);
 
         // publish node

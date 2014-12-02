@@ -288,6 +288,9 @@ abstract class AbstractNodeIO implements NodeIO {
      * @return
      */
     public function removeNode(Node $node, $recursive = true) {
+        $siteId = $node->getRootNodeId();
+        $revision = $node->getRevision();
+
         $parent = $node->getParent();
         $path = $node->getPath();
         $orderIndex = $node->getOrderIndex();
@@ -297,7 +300,7 @@ abstract class AbstractNodeIO implements NodeIO {
 
         // remove children or move the children the the parent's path
         $numChildren = 0;
-        $children = $this->getNodesByPath($node->getRootNodeId(), $node->getRevision(), $path);
+        $children = $this->getNodesByPath($siteId, $revision, $path);
         foreach ($children as $child) {
             if ($recursive) {
                 $this->removeNode($child, true);
@@ -339,7 +342,7 @@ abstract class AbstractNodeIO implements NodeIO {
 
         $this->deleteNode($node);
 
-        unset($this->nodes[$node->getId()]);
+        unset($this->nodes[$siteId][$revision][$node->getId()]);
     }
 
     /**
