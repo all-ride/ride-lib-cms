@@ -84,8 +84,11 @@ class GenericNodeValidator implements NodeValidator {
 
             $route = '/' . implode('/', $tokens);
 
+            $errors = array();
+
             foreach ($modelNodes as $modelNode) {
-                if ($modelNode->getId() == $nodeId || $modelNode->getRootNodeId() != $rootNodeId) {
+                $modelNodeId = $modelNode->getId();
+                if ($modelNodeId == $nodeId || $modelNode->getRootNodeId() != $rootNodeId || !$modelNode->hasParent()) {
                     continue;
                 }
 
@@ -99,17 +102,21 @@ class GenericNodeValidator implements NodeValidator {
                         continue;
                     }
 
-                    $error = new ValidationError(
+
+                    $errors[$modelNodeId] = new ValidationError(
                         'error.route.used.node',
                         "Route '%route%' is already used by node %node%",
                         array(
                             'route' => $route,
-                            'node' => $modelNode->getId()
+                            'node' => $modelNodeId,
                         )
                     );
 
-                    $exception->addErrors(Node::PROPERTY_ROUTE, array($error));
                 }
+            }
+
+            foreach ($errors as $error) {
+                $exception->addErrors(Node::PROPERTY_ROUTE, array($error));
             }
 
             $property->setValue($route);
