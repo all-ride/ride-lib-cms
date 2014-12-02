@@ -102,7 +102,6 @@ class GenericNodeValidator implements NodeValidator {
                         continue;
                     }
 
-
                     $errors[$modelNodeId] = new ValidationError(
                         'error.route.used.node',
                         "Route '%route%' is already used by node %node%",
