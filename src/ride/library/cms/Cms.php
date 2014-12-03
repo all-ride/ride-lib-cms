@@ -354,12 +354,13 @@ class Cms {
      * included in the result
      * @param boolean $includeEmpty Flag to see if a empty value should be
      * included in the result
+     * @param boolean $onlyFrontendNodes Flag to filter on frontend nodes
      * @return array Array with the node id as key and a string as value
      */
-    public function getNodeList(Node $node, $locale, $includeRootNode = false, $includeEmpty = true) {
+    public function getNodeList(Node $node, $locale, $includeRootNode = false, $includeEmpty = true, $onlyFrontendNodes = true) {
         $rootNode = $this->nodeModel->getNode($node->getRootNodeId(), $node->getRevision(), $node->getId(), null, true);
 
-        $options = $this->nodeModel->getListFromNodes(array($rootNode), $locale, true);
+        $options = $this->nodeModel->getListFromNodes(array($rootNode), $locale, $onlyFrontendNodes);
 
         if ($includeRootNode) {
             $options = array($rootNode->getId() => '/' . $rootNode->getName($locale)) + $options;
