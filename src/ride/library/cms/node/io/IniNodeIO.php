@@ -682,7 +682,7 @@ class IniNodeIO extends AbstractNodeIO {
             $availableWidgetsSite = $site->getAvailableWidgets();
             $availableWidgetsPublishSite = $publishSite->getAvailableWidgets();
             foreach ($usedWidgets as $widgetId) {
-                if (isset($availableWidgetsPublishSite[$widgetId])) {
+                if (!$widgetId || isset($availableWidgetsPublishSite[$widgetId])) {
                     continue;
                 }
 
