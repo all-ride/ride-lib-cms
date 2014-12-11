@@ -1261,7 +1261,8 @@ class Node {
     /**
      * Orders the sections in the provided region
      * @param string $region Name of the region
-     * @param array $order Array with the section names as value
+     * @param array $order Array with the section name as key and as value an
+     * array with the block name as key and an array of widget ids as value
      * @return null
      * @throw \ride\library\cms\exception\CmsException when the order could not
      * be performed
@@ -1269,7 +1270,8 @@ class Node {
     public function orderSections($region, array $order) {
         $sections = $this->getSections($region);
 
-        foreach ($order as $section) {
+        // validate sections
+        foreach ($order as $section => $blocks) {
             if (!isset($sections[$section])) {
                 throw new CmsException('Could not order sections of ' . $region . ': ' . $section . ' does not exist.');
             }
@@ -1281,7 +1283,41 @@ class Node {
             throw new CmsException('Could not order sections of ' . $region . ': not all sections provided. Missing sections are ' . implode(', ', array_keys($sections)) . '.');
         }
 
-        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, implode(NodeProperty::LIST_SEPARATOR, $order));
+        // update section order
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, implode(NodeProperty::LIST_SEPARATOR, array_keys($order)));
+
+        // update widget order
+        foreach ($order as $section => $blocks) {
+            foreach ($blocks as $block => $widgets) {
+                $this->orderWidgets($region, $section, $block, $widgets);
+            }
+        }
+    }
+
+    /**
+     * Order the widgets of a region
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $block Name of the block
+     * @param string|array $widgets Array with widget ids or a string with
+     * widget ids separated by a comma.
+     * @return null
+     * @throws \ride\library\cms\exception\CmsException when the widgets could
+     * not be ordered
+     */
+    public function orderWidgets($region, $section, $block, $widgets) {
+        if (!is_array($widgets)) {
+            if (!$widgets) {
+                $widgets = array();
+            } else {
+                $widgets = explode(NodeProperty::LIST_SEPARATOR, $widgets);
+            }
+        }
+
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section);
+        $sectionWidgets[$block] = array_flip($widgets);
+
+        $this->setSectionWidgets($region, $section, $sectionWidgets);
     }
 
 	/**
@@ -1407,59 +1443,6 @@ class Node {
         $properties->clearWidgetProperties();
 
         unset($sectionWidgets[$block][$widgetId]);
-
-        $this->setSectionWidgets($region, $section, $sectionWidgets);
-    }
-
-    /**
-     * Order the widgets of a region
-     * @param string $region Name of the region
-     * @param string $section Name of the section
-     * @param string $block Name of the block
-     * @param string|array $widgets Array with widget ids or a string with
-     * widget ids separated by a comma.
-     * @return null
-     * @throws \ride\library\cms\exception\CmsException when the widgets could
-     * not be ordered
-     */
-    public function orderWidgets($region, $section, $block, $widgets) {
-        if (!is_array($widgets)) {
-            $widgets = explode(NodeProperty::LIST_SEPARATOR, $widgets);
-        }
-
-        $sectionWidgets = $this->getSectionWidgets($region, $section);
-        if (isset($sectionWidgets[$block])) {
-            $blockWidgets = $sectionWidgets[$block];
-        } else {
-            $blockWidgets = array();
-        }
-
-        $orderedBlockWidgets = array();
-        foreach ($widgets as $widgetId) {
-            $widgetId = trim($widgetId);
-
-            if (!isset($blockWidgets[$widgetId])) {
-                throw new CmsException('Could not order widgets: widget ' . $widgetId . ' is not set to region ' . $region);
-            }
-
-            $orderedBlockWidgets[$widgetId] = $widgetId;
-
-            unset($blockWidgets[$widgetId]);
-        }
-
-        $numBlockWidgets = count($blockWidgets);
-        if ($numBlockWidgets) {
-            $blockWidgets = array_keys($blockWidgets);
-
-            $widget = array_pop($blockWidgets);
-            if ($numBlockWidgets > 1) {
-                throw new CmsException('Could not order widgets: widgets ' . implode(NodeProperty::LIST_SEPARATOR, $blockWidgets) . ' and ' . $widget . ' are not found in the new widget order');
-            }
-
-            throw new CmsException('Could not order widgets: widget ' . $widget . ' is not found in the new widget order');
-        }
-
-        $sectionWidgets[$block] = $orderedBlockWidgets;
 
         $this->setSectionWidgets($region, $section, $sectionWidgets);
     }
