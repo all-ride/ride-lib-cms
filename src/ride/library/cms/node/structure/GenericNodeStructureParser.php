@@ -146,10 +146,6 @@ class GenericNodeStructureParser implements NodeStructureParser {
             if ($isUniqueTree) {
                 $node->setAvailableLocales($locale);
             }
-
-            if ($type == PageNodeType::NAME) {
-                $node->setLayout($locale, 'single');
-            }
         }
 
         $node->setName($locale, $nodeArray['name']);

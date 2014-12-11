@@ -14,21 +14,28 @@ interface Layout {
     public function getName();
 
     /**
-     * Gets the template resource of the layout
+     * Gets the frontend template resource of the layout
      * @return string
      */
-    public function getResource();
+    public function getFrontendResource();
 
     /**
-     * Checks if a region exists in this layout
+     * Gets the backend template resource of the layout
+     * @return string
+     */
+    public function getBackendResource();
+
+    /**
+     * Checks if a block exists in this layout
+     * @param string $block Name of the block
      * @return boolean
      */
-    public function hasRegion($region);
+    public function hasBlock($block);
 
     /**
-     * Gets the regions for this layout
-     * @return array Array with the region name as key and as value
+     * Gets the blocks for this layout
+     * @return array Array with the block name as key and as value
      */
-    public function getRegions();
+    public function getBlocks();
 
 }

@@ -45,6 +45,12 @@ class Node {
     const PATH_SEPARATOR = '-';
 
     /**
+     * Property key for the layout
+     * @var string
+     */
+    const PROPERTY_LAYOUT = 'layout';
+
+    /**
      * Property key for the locales
      * @var string
      */
@@ -105,6 +111,18 @@ class Node {
     const PROPERTY_PUBLISH_STOP = 'publish.stop';
 
     /**
+     * Property key for region properties
+     * @var string
+     */
+    const PROPERTY_REGION = 'region';
+
+    /**
+     * Property key for the sections of a region
+     * @var string
+     */
+    const PROPERTY_SECTIONS = 'sections';
+
+    /**
      * Property key for the route
      * @var unknown_type
      */
@@ -123,13 +141,19 @@ class Node {
     const PROPERTY_THEME = 'theme';
 
     /**
+     * Property key for style
+     * @var string
+     */
+    const PROPERTY_STYLE = 'style';
+
+    /**
      * Base setting key for widget properties
      * @var string
      */
     const PROPERTY_WIDGET = 'widget';
 
     /**
-     * Property key for the widgets
+     * Suffix setting key for the widgets of a region
      * @var string
      */
     const PROPERTY_WIDGETS = 'widgets';
@@ -1084,34 +1108,216 @@ class Node {
     }
 
     /**
-     * Gets the region for a widget
-     * @return string|null Name of the region if found, null otherwise
+     * Sets the widget instance id of the queried widget
+     * @return integer
+     * @see NodeModel::getNodesForWidget
      */
-    public function getRegion($widgetId) {
-        $prefix = self::PROPERTY_WIDGETS . '.';
-
-        foreach ($this->properties as $key => $property) {
-            if (strpos($key, $prefix) !== 0 || substr_count($key, '.') !== 1) {
-                continue;
-            }
-
-            $widgetIds = array_flip(explode(',', $property->getValue()));
-
-            if (isset($widgetIds[$widgetId])) {
-                return substr($key, strlen(self::PROPERTY_WIDGETS) + 1);
-            }
-        }
-
-        return null;
+    public function setWidgetId($widgetId) {
+        $this->widgetId = $widgetId;
     }
 
     /**
-     * Gets a widget properties for the provided widget
-     * @param integer $widgetId Id of the widget
-     * @return \ride\library\cms\widget\NodeWidgetProperties
+     * Gets the widget id of the queried widget
+     * @return integer
+     * @see NodeModel::getNodesForWidget
      */
-    public function getWidgetProperties($widgetId) {
-        return new NodeWidgetProperties($this, $widgetId);
+    public function getWidgetId() {
+        return $this->widgetId;
+    }
+
+    /**
+     * Gets the sections in the provided region
+     * @param string $region Name of the region
+     * @return array Array with the name of the section as key and the name of
+     * the layout as value
+     */
+    public function getSections($region) {
+        $sections = array();
+
+        $sectionsProperty = $this->get(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS);
+        if ($sectionsProperty === null) {
+            return $sections;
+        }
+
+        $sectionNames = explode(NodeProperty::LIST_SEPARATOR, $sectionsProperty);
+        foreach ($sectionNames as $sectionName) {
+            $sectionName = trim($sectionName);
+
+            $sections[$sectionName] = $this->getSectionLayout($region, $sectionName);
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Adds a section to the provided region
+     * @param string $region Name of the region
+     * @param string $layout Name of the layout
+     * @param string $name Name for the section
+     * @return string Name of the new section
+     * @throws \ride\library\cms\exception\CmsException when the provided
+     * section already exists
+     */
+    public function addSection($region, $layout, $name = null) {
+        $sections = $this->getSections($region);
+        if ($name !== null && isset($sections[$name])) {
+            throw new CmsException('Could not add section: ' . $name . ' already exists, use setSectionLayout to change the layout.');
+        }
+
+        if ($name === null) {
+            $name = count($sections);
+            while (isset($sections[$name])) {
+                $name++;
+            }
+        }
+
+        $sections[$name] = $layout;
+
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $name . '.layout', $layout);
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, implode(NodeProperty::LIST_SEPARATOR, array_keys($sections)));
+
+        return $name;
+    }
+
+    /**
+     * Deletes a section from the provided region
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @return null
+     */
+    public function deleteSection($region, $section) {
+        $sections = $this->getSections($region);
+        if (!isset($sections[$section])) {
+            throw new CmsException('Could not delete section: ' . $name . ' does not exist');
+        }
+
+        // remove from sections definition
+        unset($sections[$section]);
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, implode(NodeProperty::LIST_SEPARATOR, array_keys($sections)));
+
+        // remove actual section definition
+        $prefix = self::PROPERTY_REGION . '.' . $region . '.' . $section . '.';
+
+        $properties = $this->getProperties($prefix);
+        foreach ($properties as $key => $property) {
+            unset($this->properties[$key]);
+        }
+    }
+
+    /**
+     * Sets the section layout
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $layout Name of the layout
+     * @return null
+     */
+    public function setSectionLayout($region, $section, $layout) {
+        $sections = $this->getSections($region);
+        if (!isset($sections[$section])) {
+            throw new CmsException('Could not set layout of section: ' . $section . ' does not exist.');
+        }
+
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_LAYOUT, $layout);
+    }
+
+    /**
+     * Gets the section layout
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $default Default value for when no layout set
+     * @return string Name of the layout
+     */
+    public function getSectionLayout($region, $section, $default = null) {
+        return $this->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_LAYOUT, $default);
+    }
+
+    /**
+     * Sets the section style
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $style Extra style class for the section
+     * @return null
+          */
+    public function setSectionStyle($region, $section, $style) {
+        $sections = $this->getSections($region);
+        if (!isset($sections[$section])) {
+            throw new CmsException('Could not set style of section: ' . $section . ' does not exist.');
+        }
+
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_STYLE, $style);
+    }
+
+    /**
+     * Gets the section style
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $default Default value for when no layout set
+     * @return string Extra style class for the section
+     */
+    public function getSectionStyle($region, $section, $default = null) {
+        return $this->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_STYLE, $default);
+    }
+
+    /**
+     * Orders the sections in the provided region
+     * @param string $region Name of the region
+     * @param array $order Array with the section name as key and as value an
+     * array with the block name as key and an array of widget ids as value
+     * @return null
+     * @throw \ride\library\cms\exception\CmsException when the order could not
+     * be performed
+     */
+    public function orderSections($region, array $order) {
+        $sections = $this->getSections($region);
+
+        // validate sections
+        foreach ($order as $section => $blocks) {
+            if (!isset($sections[$section])) {
+                throw new CmsException('Could not order sections of ' . $region . ': ' . $section . ' does not exist.');
+            }
+
+            unset($sections[$section]);
+        }
+
+        if (count($sections)) {
+            throw new CmsException('Could not order sections of ' . $region . ': not all sections provided. Missing sections are ' . implode(', ', array_keys($sections)) . '.');
+        }
+
+        // update section order
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, implode(NodeProperty::LIST_SEPARATOR, array_keys($order)));
+
+        // update widget order
+        foreach ($order as $section => $blocks) {
+            foreach ($blocks as $block => $widgets) {
+                $this->orderWidgets($region, $section, $block, $widgets);
+            }
+        }
+    }
+
+    /**
+     * Order the widgets of a region
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $block Name of the block
+     * @param string|array $widgets Array with widget ids or a string with
+     * widget ids separated by a comma.
+     * @return null
+     * @throws \ride\library\cms\exception\CmsException when the widgets could
+     * not be ordered
+     */
+    public function orderWidgets($region, $section, $block, $widgets) {
+        if (!is_array($widgets)) {
+            if (!$widgets) {
+                $widgets = array();
+            } else {
+                $widgets = explode(NodeProperty::LIST_SEPARATOR, $widgets);
+            }
+        }
+
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section);
+        $sectionWidgets[$block] = array_flip($widgets);
+
+        $this->setSectionWidgets($region, $section, $sectionWidgets);
     }
 
 	/**
@@ -1128,28 +1334,59 @@ class Node {
         return $widget;
 	}
 
+    /**
+     * Gets a widget properties for the provided widget
+     * @param integer $widgetId Id of the widget
+     * @return \ride\library\cms\widget\NodeWidgetProperties
+     */
+    public function getWidgetProperties($widgetId) {
+        return new NodeWidgetProperties($this, $widgetId);
+    }
+
+    /**
+     * Gets the block information for a widget
+     * @param string $widgetId Id of the widget instance
+     * @return array|null Null if the widget is not set on this node, an array
+     * with the region, section and block as key otherwise
+     */
+    public function getWidgetBlockInfo($widgetId) {
+        $prefix = self::PROPERTY_REGION . '.';
+        $suffix = '.' . self::PROPERTY_WIDGETS;
+
+        $site = $this->getRootNode();
+
+        foreach ($this->properties as $key => $property) {
+            if (strpos($key, $prefix) !== 0 || !strpos($key, $suffix)) {
+                // not a region widgets definition
+                continue;
+            }
+
+            $tokens = explode('.', $key);
+
+            $widgets = $this->parseSectionString($site, $property->getValue());
+            foreach ($widgets as $block => $blockWidgets) {
+                if (isset($blockWidgets[$widgetId])) {
+                    return array(
+                        'region' => $tokens[1],
+                        'section' => $tokens[2],
+                        'block' => $block,
+                    );
+                }
+            }
+        }
+
+        return null;
+    }
+
 	/**
-     * Get the widgets for a region
-     * @param string $region name of the region
-     * @return array Array with the widget instance id as key and the widget id
-     * as value
+     * Get the widgets for a section in a region
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @return array Array with the block id as key and as value an array with the
+     * widget instance id as key and the widget id as value
 	 */
-    public function getWidgets($region) {
-        $widgets = array();
-
-        $widgetString = $this->get(self::PROPERTY_WIDGETS . '.' . $region);
-        if (!$widgetString) {
-        	return $widgets;
-        }
-
-        $widgetIds = explode(NodeProperty::LIST_SEPARATOR, $widgetString);
-        foreach ($widgetIds as $widgetId) {
-            $widgetId = trim($widgetId);
-
-            $widgets[$widgetId] = $this->get(self::PROPERTY_WIDGET . '.' . $widgetId);
-        }
-
-        return $widgets;
+    public function getWidgets($region, $section) {
+        return $this->getSectionWidgets($this, $region, $section);
     }
 
 	/**
@@ -1157,47 +1394,35 @@ class Node {
      * @param string $region Name of the region
      * @return array Array with the widget id as key and value
 	 */
-    public function getInheritedWidgets($region) {
-        $inheritedWidgets = array();
-
+    public function getInheritedWidgets($region, $section) {
         if (!$this->hasParent()) {
-            return $inheritedWidgets;
+            return array();
         }
 
-        $parent = $this->getParentNode();
-
-        $widgetString = $parent->get(self::PROPERTY_WIDGETS . '.' . $region, null, true, true);
-        if (!$widgetString) {
-        	return $inheritedWidgets;
-        }
-
-        $widgetIds = explode(NodeProperty::LIST_SEPARATOR, $widgetString);
-        foreach ($widgetIds as $widgetId) {
-            $widgetId = trim($widgetId);
-
-            $inheritedWidgets[$widgetId] = $widgetId;
-        }
-
-        return $inheritedWidgets;
+        return $this->getSectionWidgets($this->getParentNode(), $region, $section);
     }
 
     /**
-     * Adds a widget to a region
+     * Adds a widget to a section
      * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $block Name of the block
      * @param integer $widgetId Id of the new widget instance
      * @return null
      */
-    public function addWidget($region, $widgetId) {
-        $key = self::PROPERTY_WIDGETS . '.' . $region;
-
-        $nodeWidgets = $this->get($key);
-        if (!$nodeWidgets) {
-            $nodeWidgets = $widgetId;
-        } else {
-            $nodeWidgets .= NodeProperty::LIST_SEPARATOR . $widgetId;
+    public function addWidget($region, $section, $block, $widgetId) {
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section);
+        if (isset($sectionWidgets[$block][$widgetId])) {
+            return;
         }
 
-        $this->set($key, $nodeWidgets);
+        if (isset($sectionWidgets[$block])) {
+            $sectionWidgets[$block][$widgetId] = $widgetId;
+        } else {
+            $sectionWidgets[$block] = array($widgetId => $widgetId);
+        }
+
+        $this->setSectionWidgets($region, $section, $sectionWidgets);
     }
 
     /**
@@ -1208,82 +1433,18 @@ class Node {
      * @throws \ride\library\cms\exception\CmsException when a widget could not
      * be found
      */
-    public function deleteWidget($region, $widgetId) {
-        $widgetsKey = self::PROPERTY_WIDGETS . '.' . $region;
-
-        $widgetsValue = $this->get($widgetsKey);
-        if (!$widgetsValue) {
-            return;
-        }
-
-        $widgetIds = explode(NodeProperty::LIST_SEPARATOR, $widgetsValue);
-        $widgetsValue = '';
-
-        $foundWidget = false;
-        foreach ($widgetIds as $id) {
-            if ($id == $widgetId) {
-            	$foundWidget = true;
-
-                continue;
-            }
-
-            $widgetsValue .= ($widgetsValue ? NodeProperty::LIST_SEPARATOR : '') . $id;
-        }
-
-        if (!$foundWidget) {
+    public function deleteWidget($region, $section, $block, $widgetId) {
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section);
+        if (!isset($sectionWidgets[$block][$widgetId])) {
         	throw new CmsException('Could not delete widget with id ' . $widgetId . ': widget not found');
         }
 
-        // remove properties of the widget
         $properties = $this->getWidgetProperties($widgetId);
         $properties->clearWidgetProperties();
 
-        // remove the widget
-        $this->set($widgetsKey, $widgetsValue);
-    }
+        unset($sectionWidgets[$block][$widgetId]);
 
-    /**
-     * Order the widgets of a region
-     * @param string $region Name of the region
-     * @param string|array $widgets Array with widget ids or a string with
-     * widget ids separated by a comma.
-     * @return null
-     * @throws \ride\library\cms\exception\CmsException when the widgets could
-     * not be ordered
-     */
-    public function orderWidgets($region, $widgets) {
-        if (!is_array($widgets)) {
-            $widgets = explode(NodeProperty::LIST_SEPARATOR, $widgets);
-        }
-
-        $widgetsKey = self::PROPERTY_WIDGETS . '.' . $region;
-        $currentWidgets = explode(NodeProperty::LIST_SEPARATOR, $this->get($widgetsKey, ''));
-
-        $widgetsValue = '';
-        foreach ($widgets as $widgetId) {
-            $widgetId = trim($widgetId);
-
-            $key = array_search($widgetId, $currentWidgets);
-            if ($key === false) {
-                throw new CmsException('Could not order widgets: widget ' . $widgetId . ' is not set to region ' . $region);
-            }
-
-            $widgetsValue .= ($widgetsValue ? NodeProperty::LIST_SEPARATOR : '') . $widgetId;
-
-            unset($currentWidgets[$key]);
-        }
-
-        $numCurrentWidgets = count($currentWidgets);
-        if ($numCurrentWidgets) {
-            $widget = array_pop($currentWidgets);
-            if ($numCurrentWidgets > 1) {
-                throw new CmsException('Could not order widgets: widgets ' . implode(NodeProperty::LIST_SEPARATOR, $currentWidgets) . ' and ' . $widget . ' are not found in the new widget order');
-            }
-
-            throw new CmsException('Could not order widgets: widget ' . $widget . ' is not found in the new widget order');
-        }
-
-        $this->set($widgetsKey, $widgetsValue);
+        $this->setSectionWidgets($region, $section, $sectionWidgets);
     }
 
     /**
@@ -1293,36 +1454,91 @@ class Node {
     public function getUsedWidgets() {
         $widgets = array();
 
-        $regionProperties = $this->getProperties(self::PROPERTY_WIDGETS);
-        foreach ($regionProperties as $regionProperty) {
-            $regionWidgets = explode(NodeProperty::LIST_SEPARATOR, $regionProperty->getValue());
+        $prefix = self::PROPERTY_REGION . '.';
+        $suffix = '.' . self::PROPERTY_WIDGETS;
 
-            foreach ($regionWidgets as $widgetId) {
-                $widgetId = trim($widgetId);
+        $site = $this->getRootNode();
 
-                $widgets[$widgetId] = $widgetId;
+        foreach ($this->properties as $key => $property) {
+            if (strpos($key, $prefix) !== 0 || !strpos($key, $suffix)) {
+                // not a region widgets definition
+                continue;
+            }
+
+            $sectionWidgets = $this->parseSectionString($site, $property->getValue());
+            foreach ($sectionWidgets as $block => $blockWidgets) {
+                foreach ($blockWidgets as $widgetId => $widget) {
+                    $widgets[$widgetId] = $widgetId;
+                }
             }
         }
 
         return $widgets;
     }
 
-    /**
-     * Sets the widget instance id of the queried widget
-     * @return integer
-     * @see NodeModel::getNodesForWidget
-     */
-    public function setWidgetId($widgetId) {
-        $this->widgetId = $widgetId;
+	/**
+     * Get the widgets for a section in a region for the provided node
+     * @param Node $node Node to query
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @return array Array with the block id as key and as value an array with the
+     * widget instance id as key and the widget id as value
+	 */
+    protected function getSectionWidgets(Node $node, $region, $section) {
+        $sectionString = $node->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_WIDGETS);
+        if (!$sectionString) {
+        	return array();
+        }
+
+        return $this->parseSectionString($node->getRootNode(), $sectionString);
     }
 
     /**
-     * Gets the widget id of the queried widget
-     * @return integer
-     * @see NodeModel::getNodesForWidget
+     * Sets the section widget array back to the node properties
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param array $widgets Array with the block id as key and as value an
+     * array with the widget instance id as key and the widget id as value
      */
-    public function getWidgetId() {
-        return $this->widgetId;
+    protected function setSectionWidgets($region, $section, array $widgets) {
+        $widgetBlocks = array();
+        foreach ($widgets as $blockWidgets) {
+            $widgetBlocks[] = '[' . implode(NodeProperty::LIST_SEPARATOR, array_keys($blockWidgets)) . ']';
+        }
+
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_WIDGETS, implode(NodeProperty::LIST_SEPARATOR, $widgetBlocks));
+    }
+
+    /**
+     * Parses the widget from the provided section string
+     * @param string $section String to define the widgets in a section
+     * eg. [12,4,87],[43,2]
+     * @return array Array with the block id as key and as value an array with the
+     * widget instance id as key and the widget id as value
+     */
+    protected function parseSectionString(Node $site, $sectionString) {
+        $blocks = array();
+
+        $blocksWidgetIds = explode(']' . NodeProperty::LIST_SEPARATOR . '[', $sectionString);
+        foreach ($blocksWidgetIds as $block => $blockWidgetIds) {
+            $block++; // start from 1 instead of 0
+
+            $blocks[$block] = array();
+
+            $blockWidgetIds = trim($blockWidgetIds, '[] ');
+            if (!$blockWidgetIds) {
+                continue;
+            }
+
+            $widgetIds = explode(NodeProperty::LIST_SEPARATOR, $blockWidgetIds);
+            foreach ($widgetIds as $widgetId) {
+                $widgetId = trim($widgetId);
+
+                $blocks[$block][$widgetId] = $site->get(self::PROPERTY_WIDGET . '.' . $widgetId);
+            }
+        }
+
+        return $blocks;
     }
 
 }
