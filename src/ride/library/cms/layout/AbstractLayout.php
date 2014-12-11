@@ -3,15 +3,15 @@
 namespace ride\library\cms\layout;
 
 /**
- * Single column page layout
+ * Abstract layout
  */
 abstract class AbstractLayout implements Layout {
 
     /**
-     * Region names
+     * Block names
      * @var array
      */
-    protected $regions;
+    protected $blocks;
 
     /**
      * Gets the machine name of the layout
@@ -22,27 +22,36 @@ abstract class AbstractLayout implements Layout {
     }
 
     /**
-     * Gets the template resource of the layout
+     * Gets the frontend template resource of the layout
      * @return string
      */
-    public function getResource() {
-        return 'cms/frontend/layout-' . static::NAME;
+    public function getFrontendResource() {
+        return 'cms/frontend/layout/' . static::NAME;
     }
 
     /**
-     * Checks if a region exists in this layout
+     * Gets the backend template resource of the layout
+     * @return string
+     */
+    public function getBackendResource() {
+        return 'cms/backend/layout/' . static::NAME;
+    }
+
+
+    /**
+     * Checks if a block exists in this layout
      * @return boolean
      */
-    public function hasRegion($region) {
-        return isset($this->regions[$region]);
+    public function hasBlock($block) {
+        return isset($this->blocks[$block]);
     }
 
     /**
-     * Gets the regions for this layout
-     * @return array Array with the region name as key and as value
+     * Gets the blocks for this layout
+     * @return array Array with the block name as key and as value
      */
-    public function getRegions() {
-        return $this->regions;
+    public function getBlocks() {
+        return $this->blocks;
     }
 
 }

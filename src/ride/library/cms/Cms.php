@@ -299,35 +299,16 @@ class Cms {
      * @param string $locale Code of the locale
      * @param string $region Machine name of the region
      * @param string $theme Machine name of the theme
-     * @param string $layout Machine name of the layout
      * @return boolean True when the region is available in the provided node,
      * false if the region is not available, the response code will be set to
      * 404
      */
-    public function resolveRegion(Node $node, $locale, $region, &$theme = null, &$layout = null) {
+    public function resolveRegion(Node $node, $locale, $region, &$theme = null) {
         try {
-            if (method_exists($node, 'getLayout') && $layout = $node->getLayout($locale)) {
-                $layout = $this->layoutModel->getLayout($layout);
-                $isLayoutRegion = $layout->hasRegion($region);
-            } else {
-                $layouts = $this->layoutModel->getLayouts();
-                $isLayoutRegion = false;
-                foreach ($layouts as $l) {
-                    if ($l->hasRegion($region)) {
-                        $isLayoutRegion = true;
-
-                        break;
-                    }
-                }
-            }
-
             $theme = $node->getTheme();
-            if ($theme) {
-                $theme = $this->themeModel->getTheme($theme);
-            }
+            $theme = $this->themeModel->getTheme($theme);
 
-            $isThemeRegion = $theme->hasRegion($region);
-            if (!$isThemeRegion && !$isLayoutRegion) {
+            if (!$theme->hasRegion($region)) {
                 throw new CmsException();
             }
         } catch (CmsException $exception) {
