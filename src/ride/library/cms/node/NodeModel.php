@@ -269,6 +269,14 @@ class NodeModel {
         return $result;
     }
 
+    /**
+     * Gets all the nodes which contain a certain widget
+     * @param string $siteId Id of the site
+     * @param string Name of the revision
+     * @param string $widget Name of the widget (dependency id)
+     * @param string $locale Code of the locale
+     * @return array
+     */
     public function getSiteNodesForWidget($siteId, $revision, $widget, $locale = null) {
         $result = array();
 
