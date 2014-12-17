@@ -165,16 +165,7 @@ class Cms {
      * @return \ride\library\cms\node\Node
      */
     public function createNode($type, Node $parent = null) {
-        $node = $this->nodeModel->createNode($type);
-
-        if ($parent) {
-            $node->setParentNode($parent);
-            $node->setRevision($parent->getRevision());
-        } else {
-            $node->setRevision($this->nodeModel->getDraftRevision());
-        }
-
-        return $node;
+        return $this->nodeModel->createNode($type, $parent);
     }
 
     /**

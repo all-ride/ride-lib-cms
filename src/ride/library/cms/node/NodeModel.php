@@ -269,6 +269,14 @@ class NodeModel {
         return $result;
     }
 
+    /**
+     * Gets all the nodes which contain a certain widget
+     * @param string $siteId Id of the site
+     * @param string Name of the revision
+     * @param string $widget Name of the widget (dependency id)
+     * @param string $locale Code of the locale
+     * @return array
+     */
     public function getSiteNodesForWidget($siteId, $revision, $widget, $locale = null) {
         $result = array();
 
@@ -302,22 +310,28 @@ class NodeModel {
 
             $properties = $node->getProperties();
             foreach ($properties as $key => $property) {
-                if (strpos($key, Node::PROPERTY_WIDGETS . '.') !== 0) {
+                if (strpos($key, Node::PROPERTY_REGION . '.') !== 0 || strpos($key, '.' . Node::PROPERTY_SECTIONS) === false) {
                     continue;
                 }
 
-                $nodeWidgetIds = explode(NodeProperty::LIST_SEPARATOR, $property->getValue());
-                foreach ($nodeWidgetIds as $widgetId) {
-                    $widgetId = trim($widgetId);
+                $region = str_replace(Node::PROPERTY_REGION . '.', '', $key);
+                $region = str_replace('.' . Node::PROPERTY_SECTIONS, '', $region);
 
-                    if (!isset($availableWidgets[$widgetId])) {
-                        continue;
+                $sections = explode(NodeProperty::LIST_SEPARATOR, $property->getValue());
+                foreach ($sections as $section) {
+                    $blocks = $node->getWidgets($region, $section);
+                    foreach ($blocks as $blockId => $widgets) {
+                        foreach ($widgets as $widgetId => $widget) {
+                            if (!isset($availableWidgets[$widgetId])) {
+                                continue;
+                            }
+
+                            $resultNode = clone $node;
+                            $resultNode->setWidgetId($widgetId);
+
+                            $result[] = $resultNode;
+                        }
                     }
-
-                    $resultNode = clone $node;
-                    $resultNode->setWidgetId($widgetId);
-
-                    $result[] = $resultNode;
                 }
             }
         }
@@ -328,14 +342,17 @@ class NodeModel {
     /**
      * Creates a new node
      * @param string $type Name of the node type
-     * @param string $parentNodeId Id of the parent node
+     * @param Node $parent Parent node
      * @return Node
      */
-    public function createNode($type, $parentNodeId = null) {
+    public function createNode($type, Node $parent = null) {
         $node = $this->nodeTypeManager->getNodeType($type)->createNode();
 
-        if ($parentNodeId) {
-            $node->setParentNode($this->getNode($parentNodeId));
+        if ($parent) {
+            $node->setParentNode($parent);
+            $node->setRevision($parent->getRevision());
+        } else {
+            $node->setRevision($this->getDraftRevision());
         }
 
         return $node;
