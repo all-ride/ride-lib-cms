@@ -492,6 +492,7 @@ class NodeModel {
 
         $nodeType = $this->nodeTypeManager->getNodeType($node->getType());
         $clone = $nodeType->createNode();
+        $clone->setRevision($node->getRevision());
 
         if ($newParent) {
             $clone->setParent($newParent);
@@ -500,7 +501,7 @@ class NodeModel {
         }
 
         if ($clone->getParent()) {
-            $clone->setParentNode($this->io->getNode($clone->getParentNodeId()));
+            $clone->setParentNode($this->io->getNode($node->getRootNodeId(), $node->getRevision(), $clone->getParentNodeId()));
         }
 
         if ($reorder) {
@@ -517,7 +518,7 @@ class NodeModel {
             // reorder the siblings after the original node
             $cloneOrderIndex = $clone->getOrderIndex();
 
-            $siblings = $this->io->getChildren($node->getParent(), 0);
+            $siblings = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getParent(), 0);
             foreach ($siblings as $sibling) {
                 $siblingOrderIndex = $sibling->getOrderIndex();
                 if ($siblingOrderIndex < $cloneOrderIndex) {
@@ -532,7 +533,7 @@ class NodeModel {
 
         if ($recursive) {
             // clone the children
-            $children = $this->io->getChildren($node->getPath(), 0);
+            $children = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getPath(), 0);
 
             $path = $clone->getPath();
 
@@ -661,7 +662,7 @@ class NodeModel {
             if (!$keepOriginalName && strpos($key, Node::PROPERTY_NAME . '.') === 0) {
                 // add copy suffix to the name
                 $locale = str_replace(Node::PROPERTY_NAME . '.', '', $key);
-                $children = $this->io->getChildren($source->getParent(), 0);
+                $children = $this->io->getChildren($source->getRootNodeId(), $source->getRevision(), $source->getParent(), 0);
 
                 $baseName = $value;
                 $name = $baseName . ' (clone)';
