@@ -704,8 +704,11 @@ class IniNodeIO extends AbstractNodeIO {
         // write the node file to the publish directory
         $nodeFile = $this->getNodeFile($node);
         $publishFile = $publishDirectory->getChild($nodeFile->getName());
-
-        $nodeFile->copy($publishFile);
+        if ($nodeFile->exists()) {
+            $nodeFile->copy($publishFile);
+        } elseif ($publishFile->exists()) {
+            $publishFile->delete();
+        }
     }
 
 }
