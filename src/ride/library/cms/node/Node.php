@@ -791,7 +791,7 @@ class Node {
      * @return string Provided URL made absolute
      */
     public function resolveUrl($locale, $baseUrl, $url) {
-        if ($url{0} == '#' || strncmp($url, 'mailto:', 7) === 0 || strncmp($url, 'http:', 5) === 0 || strncmp($url, 'https:', 6) === 0 || ($url{0} == '/' && $url{1} == '/')) {
+        if ($url == '' || $url{0} == '#' || strncmp($url, 'mailto:', 7) === 0 || strncmp($url, 'http:', 5) === 0 || strncmp($url, 'https:', 6) === 0 || ($url{0} == '/' && $url{1} == '/')) {
             return $url;
         }
 
