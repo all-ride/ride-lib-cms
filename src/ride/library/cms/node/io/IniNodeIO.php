@@ -200,6 +200,7 @@ class IniNodeIO extends AbstractNodeIO {
         }
 
         $sites = $this->getSites();
+        $dateModified = 0;
 
         $files = $directory->read();
         foreach ($files as $file) {
@@ -210,6 +211,9 @@ class IniNodeIO extends AbstractNodeIO {
             try {
                 $ini = $file->read();
                 $node = $this->getNodeFromIni($ini);
+                $node->setDateModified($file->getModificationTime());
+
+                $dateModified = max($dateModified, $node->getDateModified());
             } catch (Exception $exception) {
                 throw new CmsException('Could not parse the INI configuration from ' . $file->getName(), 0, $exception);
             }
@@ -223,6 +227,7 @@ class IniNodeIO extends AbstractNodeIO {
         foreach ($nodes as $node) {
             if ($node->getType() === SiteNodeType::NAME) {
                 $node->setRevisions($sites[$node->getId()]->getRevisions());
+                $node->setDateModified($dateModified);
             }
 
             $parentId = $node->getParentNodeId();

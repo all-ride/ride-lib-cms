@@ -39,6 +39,20 @@ class CacheNodeIO extends AbstractNodeIO {
     }
 
     /**
+     * Destruction of the cached NodeIO
+     * @return null
+     */
+    public function __destruct() {
+        if (isset($this->needsClear) && $this->needsClear) {
+            $this->clearCache();
+        }
+
+        if (isset($this->needsWrite) && $this->needsWrite) {
+            $this->writeCache();
+        }
+    }
+
+    /**
      * Sets the instance of the node model
      * @param \ride\library\cms\node\NodeModel $nodeModel
      * @return null
@@ -128,6 +142,14 @@ class CacheNodeIO extends AbstractNodeIO {
             }
         }
 
+        $this->needsWrite = true;
+    }
+
+    /**
+     * Writes the sites and nodes to the cache
+     * @return null
+     */
+    protected function writeCache() {
         // generate the PHP code for the obtained nodes
         $php = $this->generatePhp($this->sites, $this->nodes);
 
@@ -137,6 +159,10 @@ class CacheNodeIO extends AbstractNodeIO {
 
         // write the PHP code to file
         $this->file->write($php);
+
+        if (isset($this->needsWrite)) {
+            unset($this->needsWrite);
+        }
     }
 
     /**
@@ -146,7 +172,12 @@ class CacheNodeIO extends AbstractNodeIO {
      */
     protected function writeNode(Node $node) {
         $this->io->writeNode($node);
-        $this->clearCache();
+
+        if ($this->nodes !== null) {
+            $this->nodes[$node->getRootNodeId()][$node->getRevision()][$node->getId()] = $node;
+        }
+
+        $this->needsClear = true;
     }
 
     /**
@@ -156,7 +187,12 @@ class CacheNodeIO extends AbstractNodeIO {
      */
     protected function deleteNode(Node $node) {
         $this->io->deleteNode($node);
-        $this->clearCache();
+
+        if (isset($this->nodes[$node->getRootNodeId()][$node->getRevision()][$node->getId()])) {
+            unset($this->nodes[$node->getRootNodeId()][$node->getRevision()][$node->getId()]);
+        }
+
+        $this->needsClear = true;
     }
 
     /**
@@ -190,6 +226,10 @@ class CacheNodeIO extends AbstractNodeIO {
         if ($this->file->exists()) {
             $this->file->delete();
         }
+
+        if (isset($this->needsClear)) {
+            unset($this->needsClear);
+        }
     }
 
     /**
@@ -221,6 +261,7 @@ class CacheNodeIO extends AbstractNodeIO {
                     $output .= '$node = $this->nodeModel->createNode("' . $node->getType() . '");';
                     $output .= "\n";
                     $output .= '$node->setId("' . $node->getId() . '");';
+                    $output .= '$node->setDateModified(' . $node->getDateModified() . ');';
                     $output .= "\n";
                     if ($node->getParent()) {
                         $output .= '$node->setParent("' . $node->getParent() . '");';
