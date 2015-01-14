@@ -218,6 +218,12 @@ class Node {
 	 */
 	private $widgetId;
 
+    /**
+     * UNIX timestamp of the last change
+     * @var integer
+     */
+    protected $dateModified;
+
 	/**
 	 * Constructs a new node
 	 * @param string $type Type of the node
@@ -231,6 +237,7 @@ class Node {
         $this->parentNode = null;
         $this->orderIndex = null;
         $this->revision = null;
+        $this->dateModified = 0;
 
         $this->properties = array();
         $this->defaultInherit = false;
@@ -504,6 +511,23 @@ class Node {
      */
     public function getRevision() {
         return $this->revision;
+    }
+
+    /**
+     * Sets the date of the last modification
+     * @param integer $dateModified UNIX timestamp of last modification
+     * @return null
+     */
+    public function setDateModified($dateModified) {
+        $this->dateModified = $dateModified;
+    }
+
+    /**
+     * Gets the date of the last modification
+     * @return integer UNIX timestamp of last modification
+     */
+    public function getDateModified() {
+        return $this->dateModified;
     }
 
     /**
