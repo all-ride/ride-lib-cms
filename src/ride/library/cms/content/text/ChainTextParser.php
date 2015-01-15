@@ -72,6 +72,17 @@ class ChainTextParser implements TextParser {
     }
 
     /**
+     * Sets the base URL to the site
+     * @param string $siteURL Site URL
+     * @return null
+     */
+    public function setSiteUrl($siteUrl) {
+        foreach ($this->textParsers as $textParser) {
+            $textParser->setSiteUrl($siteUrl);
+        }
+    }
+
+    /**
      * Parses a text for display
      * @param string $text Text to parse
      * @return string Parsed text

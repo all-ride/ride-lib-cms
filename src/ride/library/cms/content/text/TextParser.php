@@ -31,6 +31,13 @@ interface TextParser {
     public function setBaseUrl($baseUrl);
 
     /**
+     * Sets the site URL
+     * @param string $siteURL Site URL
+     * @return null
+     */
+    public function setSiteUrl($siteUrl);
+
+    /**
      * Parses a text for display
      * @param string $text Text to parse
      * @return string Parsed text

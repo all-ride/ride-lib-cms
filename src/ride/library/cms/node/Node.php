@@ -1410,7 +1410,7 @@ class Node {
      * widget instance id as key and the widget id as value
 	 */
     public function getWidgets($region, $section) {
-        return $this->getSectionWidgets($this, $region, $section);
+        return $this->getSectionWidgets($this, $region, $section, false);
     }
 
 	/**
@@ -1423,7 +1423,7 @@ class Node {
             return array();
         }
 
-        return $this->getSectionWidgets($this->getParentNode(), $region, $section);
+        return $this->getSectionWidgets($this->getParentNode(), $region, $section, true);
     }
 
     /**
@@ -1505,16 +1505,33 @@ class Node {
      * @param Node $node Node to query
      * @param string $region Name of the region
      * @param string $section Name of the section
+     * @param boolean $inherited Fetch only inherited properties of the node
      * @return array Array with the block id as key and as value an array with the
      * widget instance id as key and the widget id as value
 	 */
-    protected function getSectionWidgets(Node $node, $region, $section) {
-        $sectionString = $node->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_WIDGETS);
+    protected function getSectionWidgets(Node $node, $region, $section, $inherited) {
+        // resolve set widgets
+        $sectionString = $node->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_WIDGETS, null, true, $inherited);
         if (!$sectionString) {
         	return array();
         }
 
-        return $this->parseSectionString($node->getRootNode(), $sectionString);
+        // parse widget string
+        $sectionWidgets = $this->parseSectionString($node->getRootNode(), $sectionString);
+        if ($inherited) {
+            return $sectionWidgets;
+        }
+
+        // resolve inherited widgets
+        $inheritedSectionWidgets = $this->getInheritedWidgets($region, $section);
+
+        foreach ($sectionWidgets as $blockId => $blockWidgets) {
+            if (!$blockWidgets && isset($inheritedSectionWidgets[$blockId])) {
+                $sectionWidgets[$blockId] = $inheritedSectionWidgets[$blockId];
+            }
+        }
+
+        return $sectionWidgets;
     }
 
     /**

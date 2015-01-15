@@ -3,7 +3,7 @@
 namespace ride\library\cms\content\text\variable;
 
 use ride\library\cms\exception\CmsException;
-use ride\library\cms\node\exception\NodeNotFoundException;
+use ride\library\cms\exception\NodeNotFoundException;
 use ride\library\cms\node\NodeModel;
 
 /**
@@ -70,11 +70,11 @@ class NodeVariableParser extends AbstractVariableParser {
 
                 switch ($tokens[2]) {
                     case self::VARIABLE_URL:
-                        return $this->textParser->getBaseUrl() . $node->getRoute($locale);
+                        return $this->textParser->getSiteUrl() . $node->getRoute($locale);
                     case self::VARIABLE_NAME:
                         return $node->getName($locale);
                     case self::VARIABLE_LINK:
-                        return '<a href="' . $this->textParser->getBaseUrl() . $node->getRoute($locale) . '">' . $node->getName($locale) . '</a>';
+                        return '<a href="' . $this->textParser->getSiteUrl() . $node->getRoute($locale) . '">' . $node->getName($locale) . '</a>';
                 }
 
                 break;
@@ -89,9 +89,9 @@ class NodeVariableParser extends AbstractVariableParser {
                     case self::VARIABLE_NAME:
                         return $this->textParser->getNode()->getRootNode()->getName($locale);
                     case self::VARIABLE_URL:
-                        return $this->textParser->getBaseUrl();
+                        return $this->textParser->getSiteUrl();
                     case self::VARIABLE_LINK:
-                        return '<a href="' . $this->textParser->getBaseUrl() . '">' . $this->textParser->getNode()->getRootNode()->getName($locale) . '</a>';
+                        return '<a href="' . $this->textParser->getSiteUrl() . '">' . $this->textParser->getNode()->getRootNode()->getName($locale) . '</a>';
                 }
 
                 break;
