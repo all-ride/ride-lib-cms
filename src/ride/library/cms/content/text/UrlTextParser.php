@@ -26,12 +26,12 @@ class UrlTextParser extends AbstractTextParser {
 
         $anchors = $html->find('a');
         if ($anchors) {
-            $this->replaceUrls($anchors, 'href');
+            $this->replaceUrls($anchors, 'href', $this->siteUrl);
         }
 
         $images = $html->find('img');
         if ($images) {
-            $this->replaceUrls($images, 'src');
+            $this->replaceUrls($images, 'src', $this->baseUrl);
         }
 
         return (string) $html;
@@ -41,11 +41,12 @@ class UrlTextParser extends AbstractTextParser {
      * Replace the url in the provided HTML elements
      * @param array $elements HTML elements with a URL attribute
      * @param string $attribute Name of the URL attribute
+     * @param string $baseUrl Base URL for the element
      * @return null
      */
-    protected function replaceUrls(array $elements, $attribute) {
+    protected function replaceUrls(array $elements, $attribute, $baseUrl) {
         foreach ($elements as $element) {
-            $element->$attribute = $this->node->resolveUrl($this->locale, $this->baseUrl, $element->$attribute);
+            $element->$attribute = $this->node->resolveUrl($this->locale, $baseUrl, $element->$attribute);
         }
     }
 

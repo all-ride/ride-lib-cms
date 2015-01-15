@@ -28,6 +28,12 @@ abstract class AbstractTextParser implements TextParser {
     protected $baseUrl;
 
     /**
+     * Base URL to the site
+     * @var string
+     */
+    protected $siteUrl;
+
+    /**
      * Sets the current node
      * @param \ride\library\cms\node\Node $node Current node
      * @return null
@@ -76,6 +82,23 @@ abstract class AbstractTextParser implements TextParser {
      */
     public function getBaseUrl() {
         return $this->baseUrl;
+    }
+
+    /**
+     * Sets the base URL to the site
+     * @param string $siteURL Site URL
+     * @return null
+     */
+    public function setSiteUrl($siteUrl) {
+        $this->siteUrl = $siteUrl;
+    }
+
+    /**
+     * Gets the site URL of the request
+     * @return string Site URL
+     */
+    public function getSiteUrl() {
+        return $this->siteUrl;
     }
 
 }
