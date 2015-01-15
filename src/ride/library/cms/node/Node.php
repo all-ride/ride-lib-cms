@@ -45,6 +45,18 @@ class Node {
     const PATH_SEPARATOR = '-';
 
     /**
+     * Delimiter to open a block
+     * @var string
+     */
+    const BLOCK_OPEN = '[';
+
+    /**
+     * Delimiter to close a block
+     * @var string
+     */
+    const BLOCK_CLOSE = ']';
+
+    /**
      * Property key for the layout
      * @var string
      */
@@ -1544,7 +1556,7 @@ class Node {
     protected function setSectionWidgets($region, $section, array $widgets) {
         $widgetBlocks = array();
         foreach ($widgets as $blockWidgets) {
-            $widgetBlocks[] = '[' . implode(NodeProperty::LIST_SEPARATOR, array_keys($blockWidgets)) . ']';
+            $widgetBlocks[] = self::BLOCK_OPEN . implode(NodeProperty::LIST_SEPARATOR, array_keys($blockWidgets)) . self::BLOCK_CLOSE;
         }
 
         $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_WIDGETS, implode(NodeProperty::LIST_SEPARATOR, $widgetBlocks));
@@ -1557,16 +1569,16 @@ class Node {
      * @return array Array with the block id as key and as value an array with the
      * widget instance id as key and the widget id as value
      */
-    protected function parseSectionString(Node $site, $sectionString) {
+    public function parseSectionString(Node $site, $sectionString) {
         $blocks = array();
 
-        $blocksWidgetIds = explode(']' . NodeProperty::LIST_SEPARATOR . '[', $sectionString);
+        $blocksWidgetIds = explode(self::BLOCK_CLOSE . NodeProperty::LIST_SEPARATOR . self::BLOCK_OPEN, $sectionString);
         foreach ($blocksWidgetIds as $block => $blockWidgetIds) {
             $block++; // start from 1 instead of 0
 
             $blocks[$block] = array();
 
-            $blockWidgetIds = trim($blockWidgetIds, '[] ');
+            $blockWidgetIds = trim($blockWidgetIds, self::BLOCK_OPEN . self::BLOCK_CLOSE . ' ');
             if (!$blockWidgetIds) {
                 continue;
             }
