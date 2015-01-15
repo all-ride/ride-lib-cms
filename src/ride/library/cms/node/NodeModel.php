@@ -521,7 +521,7 @@ class NodeModel {
             $siblings = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getParent(), 0);
             foreach ($siblings as $sibling) {
                 $siblingOrderIndex = $sibling->getOrderIndex();
-                if ($siblingOrderIndex < $cloneOrderIndex) {
+                if ($siblingOrderIndex < $cloneOrderIndex && $sibling->getId() == $clone->getId()) {
                     continue;
                 }
 
@@ -612,41 +612,51 @@ class NodeModel {
         foreach ($sourceProperties as $index => $sourceProperty) {
             $key = $sourceProperty->getKey();
 
-            if (strpos($key, Node::PROPERTY_WIDGETS) !== 0) {
+            if (strpos($key, Node::PROPERTY_REGION) !== 0 || !strpos($key, '.' . Node::PROPERTY_WIDGETS)) {
                 continue;
             }
 
-            $newValue = '';
+            $tokens = explode('.', $key);
+            $region = $tokens[1];
+            $section = $tokens[2];
+
+            $newValue = array();
             $inheritedWidgetIds = array();
 
             if ($parent) {
-                $inheritedValue = $parent->get($key);
+                $inheritedValue = $parent->get($key, null, true, true);
                 if ($inheritedValue) {
-                    $inheritedWidgetIds = explode(NodeProperty::LIST_SEPARATOR, $inheritedValue);
+                    $inheritedWidgetIds = $source->parseSectionString($source->getRootNode(), $inheritedValue);
                 }
             }
 
-            $sourceWidgetIds = explode(NodeProperty::LIST_SEPARATOR, $sourceProperty->getValue());
-            foreach ($sourceWidgetIds as $widgetId) {
-                if (isset($this->widgetTable[$widgetId])) {
-                    $cloneWidgetId = $this->widgetTable[$widgetId];
-                } elseif (in_array($widgetId, $inheritedWidgetIds)) {
-                    // use the same widget id for inherited widgets
-                    $cloneWidgetId = $widgetId;
+            $sourceWidgetIds = $source->parseSectionString($source->getRootNode(), $sourceProperty->getValue());
+            foreach ($sourceWidgetIds as $blockId => $blockWidgets) {
+                $newValue[$blockId] = array();
 
-                    $this->widgetTable[$widgetId] = $widgetId;
-                } else {
-                    // create a new widget for node widgets
-                    $widget = $source->getWidget($widgetId);
-                    $cloneWidgetId = $site->createWidget($widget);
+                foreach ($blockWidgets as $widgetId => $widget) {
+                    if (isset($this->widgetTable[$widgetId])) {
+                        $newWidgetId = $this->widgetTable[$widgetId];
+                    } elseif (isset($inheritedWidgetIds[$blockId][$widgetId])) {
+                        // use the same widget id for inherited widgets
+                        $this->widgetTable[$widgetId] = $widgetId;
 
-                    $this->widgetTable[$widgetId] = $cloneWidgetId;
+                        $newWidgetId = $widgetId;
+                    } else {
+                        // create a new widget for node widgets
+                        $widget = $source->getWidget($widgetId);
+                        $newWidgetId = $site->createWidget($widget);
+
+                        $this->widgetTable[$widgetId] = $newWidgetId;
+                    }
+
+                    $newValue[$blockId][] = $newWidgetId;
                 }
 
-                $newValue .= ($newValue ? NodeProperty::LIST_SEPARATOR : '') . $cloneWidgetId;
+                $newValue[$blockId] = Node::BLOCK_OPEN . implode(NodeProperty::LIST_SEPARATOR, $newValue[$blockId]) . Node::BLOCK_CLOSE;
             }
 
-            $destinationProperty = new NodeProperty($key, $newValue, $sourceProperty->getInherit());
+            $destinationProperty = new NodeProperty($key, implode(NodeProperty::LIST_SEPARATOR, $newValue), $sourceProperty->getInherit());
             $destinationProperties[$key] = $destinationProperty;
 
             unset($sourceProperties[$index]);
@@ -1052,7 +1062,6 @@ class NodeModel {
 
                     $isChanged = true;
                 }
-
             }
         }
 

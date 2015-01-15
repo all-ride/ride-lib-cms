@@ -361,6 +361,12 @@ class IniNodeIO extends AbstractNodeIO {
 
             $nodeFile->delete();
         }
+
+        // touch the site file to update the date modified
+        $siteFile = $this->getNodeFile($node->getRootNode());
+        if ($siteFile->exists()) {
+            $siteFile->touch();
+        }
     }
 
     /**
