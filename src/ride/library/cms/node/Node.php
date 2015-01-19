@@ -1350,7 +1350,7 @@ class Node {
             }
         }
 
-        $sectionWidgets = $this->getSectionWidgets($this, $region, $section);
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section, true);
         $sectionWidgets[$block] = array_flip($widgets);
 
         $this->setSectionWidgets($region, $section, $sectionWidgets);
@@ -1447,7 +1447,7 @@ class Node {
      * @return null
      */
     public function addWidget($region, $section, $block, $widgetId) {
-        $sectionWidgets = $this->getSectionWidgets($this, $region, $section);
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section, false);
         if (isset($sectionWidgets[$block][$widgetId])) {
             return;
         }
@@ -1470,7 +1470,7 @@ class Node {
      * be found
      */
     public function deleteWidget($region, $section, $block, $widgetId) {
-        $sectionWidgets = $this->getSectionWidgets($this, $region, $section);
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section, false);
         if (!isset($sectionWidgets[$block][$widgetId])) {
         	throw new CmsException('Could not delete widget with id ' . $widgetId . ': widget not found');
         }
