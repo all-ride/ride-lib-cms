@@ -1350,7 +1350,7 @@ class Node {
             }
         }
 
-        $sectionWidgets = $this->getSectionWidgets($this, $region, $section, true);
+        $sectionWidgets = $this->getSectionWidgets($this, $region, $section, false);
         $sectionWidgets[$block] = array_flip($widgets);
 
         $this->setSectionWidgets($region, $section, $sectionWidgets);
