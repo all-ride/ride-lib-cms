@@ -123,13 +123,21 @@ class CacheNodeIO extends AbstractNodeIO {
      */
     protected function readCache() {
         if ($this->file->exists()) {
-            // the generated script exists, include it and go back
             include $this->file->getPath();
 
             return;
         }
 
-        // use the wrapped IO to retrieve the data
+        $this->loadNodes();
+
+        $this->needsWrite = true;
+    }
+
+    /**
+     * Loads the nodes from the wrapped IO
+     * @return null
+     */
+    protected function loadNodes() {
         $this->nodes = array();
 
         $this->sites = $this->io->readSites();
@@ -141,8 +149,6 @@ class CacheNodeIO extends AbstractNodeIO {
                 $this->nodes[$siteId][$revision] = $this->io->readNodes($siteId, $revision);
             }
         }
-
-        $this->needsWrite = true;
     }
 
     /**
@@ -150,6 +156,12 @@ class CacheNodeIO extends AbstractNodeIO {
      * @return null
      */
     protected function writeCache() {
+        if (!$this->sites || !$this->nodes) {
+            $this->needsClear = true;
+
+            return;
+        }
+
         // generate the PHP code for the obtained nodes
         $php = $this->generatePhp($this->sites, $this->nodes);
 
@@ -261,6 +273,7 @@ class CacheNodeIO extends AbstractNodeIO {
                     $output .= '$node = $this->nodeModel->createNode("' . $node->getType() . '");';
                     $output .= "\n";
                     $output .= '$node->setId("' . $node->getId() . '");';
+                    $output .= "\n";
                     $output .= '$node->setDateModified(' . $node->getDateModified() . ');';
                     $output .= "\n";
                     if ($node->getParent()) {
@@ -318,7 +331,6 @@ foreach ($this->nodes["' . $siteId . '"]["' . $revision . '"] as $node) {
 ';
             }
         }
-
 
         foreach ($sites as $siteId => $site) {
             $output .= '$this->sites["' . $siteId . '"] = $this->nodes["' . $siteId . '"]["' . $site->getRevision() . '"]["' . $siteId . '"];' . "\n";
