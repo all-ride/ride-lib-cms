@@ -4,6 +4,7 @@ namespace ride\library\cms\node\io;
 
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\exception\NodeNotFoundException;
+use ride\library\cms\expired\ExpiredRouteModel;
 use ride\library\cms\node\type\SiteNodeType;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\NodeModel;
@@ -16,10 +17,46 @@ use ride\library\StringHelper;
 abstract class AbstractNodeIO implements NodeIO {
 
     /**
+     * Name of the type property
+     * @var string
+     */
+    const PROPERTY_TYPE = 'type';
+
+    /**
+     * Name of the id property
+     * @var string
+     */
+    const PROPERTY_ID = 'id';
+
+    /**
+     * Name of the parent property
+     * @var string
+     */
+    const PROPERTY_PARENT = 'parent';
+
+    /**
+     * Name of the order property
+     * @var string
+     */
+    const PROPERTY_ORDER = 'order';
+
+    /**
      * Instance of the node model
      * @var \ride\library\cms\node\NodeModel
      */
     protected $nodeModel;
+
+    /**
+     * Instance of the expired route model
+     * @var \ride\library\cms\expired\ExpiredRouteModel
+     */
+    protected $expiredRouteModel;
+
+    /**
+     * Offset for the instance id of a new widget
+     * @var integer
+     */
+    protected $widgetIdOffset;
 
     /**
      * Array with the available sites
@@ -46,6 +83,24 @@ abstract class AbstractNodeIO implements NodeIO {
      */
     public function setNodeModel(NodeModel $nodeModel) {
         $this->nodeModel = $nodeModel;
+    }
+
+    /**
+     * Sets the instance of the expired route model
+     * @param \ride\library\cms\node\NodeModel $nodeModel
+     * @return null
+     */
+    public function setExpiredRouteModel(ExpiredRouteModel $expiredRouteModel) {
+        $this->expiredRouteModel = $expiredRouteModel;
+    }
+
+    /**
+     * Sets the offset for the widget id of a new widget instance
+     * @param integer $widgetIdOffset
+     * @return null
+     */
+    public function setWidgetIdOffset($widgetIdOffset) {
+        $this->widgetIdOffset = $widgetIdOffset;
     }
 
     /**

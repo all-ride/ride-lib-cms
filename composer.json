@@ -15,7 +15,7 @@
         "ride/lib-reflection": ">=0.4.0",
         "ride/lib-template": ">=0.4.0",
         "ride/lib-security": ">=0.4.0",
-        "ride/lib-system": ">=0.4.5",
+        "ride/lib-system": ">=0.4.6",
         "ride/lib-widget": ">=0.3.0",
         "shark/simple_html_dom": "*"
     },

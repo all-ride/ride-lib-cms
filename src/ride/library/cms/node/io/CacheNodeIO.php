@@ -8,6 +8,8 @@ use ride\library\cms\node\SiteNode;
 use ride\library\cms\node\TrashNode;
 use ride\library\system\file\File;
 
+use \Exception;
+
 /**
  * Cache IO for another NodeIO. This IO will get the nodes from the wrapped IO
  * and generate a PHP script to include. When the generated PHP script exists,
@@ -123,9 +125,13 @@ class CacheNodeIO extends AbstractNodeIO {
      */
     protected function readCache() {
         if ($this->file->exists()) {
-            include $this->file->getPath();
+            try {
+                include $this->file->getPath();
 
-            return;
+                return;
+            } catch (Exception $exception) {
+
+            }
         }
 
         $this->loadNodes();
