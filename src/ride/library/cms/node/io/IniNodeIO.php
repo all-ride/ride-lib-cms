@@ -18,67 +18,13 @@ use \Exception;
 /**
  * INI implementation of the NodeIO
  */
-class IniNodeIO extends AbstractNodeIO {
-
-    /**
-     * Name of the type property
-     * @var string
-     */
-    const PROPERTY_TYPE = 'type';
-
-    /**
-     * Name of the id property
-     * @var string
-     */
-    const PROPERTY_ID = 'id';
-
-    /**
-     * Name of the parent property
-     * @var string
-     */
-    const PROPERTY_PARENT = 'parent';
-
-    /**
-     * Name of the order property
-     * @var string
-     */
-    const PROPERTY_ORDER = 'order';
-
-    /**
-     * Path for the node files
-     * @var \ride\library\system\file\File
-     */
-    protected $path;
+class IniNodeIO extends AbstractFileNodeIO {
 
     /**
      * Instance of the config helper
      * @var \ride\library\config\ConfigHelper
      */
     protected $configHelper;
-
-    /**
-     * Instance of the expired route model
-     * @var \ride\library\cms\expired\ExpiredRouteModel
-     */
-    protected $expiredRouteModel;
-
-    /**
-     * Offset for the instance id of a new widget
-     * @var integer
-     */
-    protected $widgetIdOffset;
-
-    /**
-     * Name of the special archive revision
-     * @var string
-     */
-    protected $archiveName;
-
-    /**
-     * Name of the special trash revision
-     * @var string
-     */
-    protected $trashName;
 
     /**
      * Constructs a new ini node IO
@@ -90,99 +36,42 @@ class IniNodeIO extends AbstractNodeIO {
      * @return null
      */
     public function __construct(File $path, ConfigHelper $configHelper, ExpiredRouteModel $expiredRouteModel) {
-        $this->path = $path;
+        parent::__construct($path, $expiredRouteModel);
+
         $this->configHelper = $configHelper;
-        $this->expiredRouteModel = $expiredRouteModel;
 
         $this->archiveName = '_archive';
         $this->trashName = '_trash';
-        $this->sites = null;
-        $this->nodes = null;
     }
 
     /**
-     * Gets the path for the data files
-     * @return \ride\library\system\file\File
+     * Reads the site and it's revisions from the provided directory
+     * @param \ride\library\system\file\File $siteDirectory Directory of the site
+     * @param string $defaultRevision Default revision of the site
+     * @return \ride\library\cms\node\SiteNode
+     * @throws \ride\library\cms\exception\CmsException when the site could not
+     * be read
      */
-    public function getPath() {
-        return $this->path;
-    }
+    protected function readSite(File $siteDirectory, $defaultRevision) {
+        $revision = null;
+        $revisions = $this->readSiteRevisions($siteDirectory, $defaultRevision, $revision);
 
-    /**
-     * Sets the offset for the widget id of a new widget instance
-     * @param integer $widgetIdOffset
-     * @return null
-     */
-    public function setWidgetIdOffset($widgetIdOffset) {
-        $this->widgetIdOffset = $widgetIdOffset;
-    }
-
-    /**
-     * Reads the sites from the data source
-     * @return array
-     */
-    protected function readSites() {
-        $sites = array();
-
-        if (!$this->path->exists()) {
-            return $sites;
+        $siteFile = $siteDirectory->getChild($revision . '/' . $siteDirectory->getName() . '.ini');
+        if ($siteFile->exists()) {
+            try {
+                $ini = $siteFile->read();
+                $site = $this->getNodeFromIni($ini);
+            } catch (Exception $exception) {
+                throw new CmsException('Could not parse the INI configuration from ' . $siteFile->getName(), 0, $exception);
+            }
+        } else {
+            throw new CmsException('No valid site in ' . $siteFile->getAbsolutePath());
         }
 
-        $defaultRevision = $this->nodeModel->getDefaultRevision();
+        $site->setRevisions($revisions);
+        $site->setRevision($revision);
 
-        $siteDirectories = $this->path->read();
-        foreach ($siteDirectories as $siteDirectory) {
-            if (!$siteDirectory->isDirectory()) {
-                continue;
-            }
-
-            $siteId = $siteDirectory->getName();
-            if ($siteId[0] == '.') {
-                // hidden directory
-                continue;
-            }
-
-            $revisions = array();
-
-            $files = $siteDirectory->read();
-            foreach ($files as $file) {
-                $revision = $file->getName();
-                if ($revision === $this->archiveName || $revision === $this->trashName || !$file->isDirectory()) {
-                    continue;
-                }
-
-                $revisions[$revision] = $revision;
-            }
-
-            if (!$revisions) {
-                throw new CmsException('No valid site in ' . $siteDirectory->getName());
-            }
-
-            if (isset($revisions[$defaultRevision])) {
-                $revision = $defaultRevision;
-            } else {
-                $revision = reset($revisions);
-            }
-
-            $siteFile = $siteDirectory->getChild($revision . '/' . $siteId . '.ini');
-            if ($siteFile->exists()) {
-                try {
-                    $ini = $siteFile->read();
-                    $site = $this->getNodeFromIni($ini);
-                } catch (Exception $exception) {
-                    throw new CmsException('Could not parse the INI configuration from ' . $siteFile->getName(), 0, $exception);
-                }
-            } else {
-                throw new CmsException('No valid site in ' . $siteDirectory->getName());
-            }
-
-            $site->setRevisions($revisions);
-            $site->setRevision($revision);
-
-            $sites[$siteId] = $site;
-        }
-
-        return $sites;
+        return $site;
     }
 
     /**
@@ -466,56 +355,9 @@ class IniNodeIO extends AbstractNodeIO {
      * @return \ride\library\cms\node\Node
      */
     protected function getNodeFromIni($ini) {
-        $ini = $this->parseIni($ini);
+        $array = $this->parseIni($ini);
 
-        if (!isset($ini[self::PROPERTY_ID])) {
-            throw new CmsException('No id provided for the node');
-        }
-        $id = $ini[self::PROPERTY_ID];
-        unset($ini[self::PROPERTY_ID]);
-
-        if (!isset($ini[self::PROPERTY_TYPE])) {
-            throw new JoppaException('No type provided for node ' . $id);
-        }
-        $type = $ini[self::PROPERTY_TYPE];
-        unset($ini[self::PROPERTY_TYPE]);
-
-        if (!isset($ini[self::PROPERTY_PARENT])) {
-            $parent = null;
-            $order = null;
-        } else {
-            $parent = $ini[self::PROPERTY_PARENT];
-            unset($ini[self::PROPERTY_PARENT]);
-
-            if (isset($ini[self::PROPERTY_ORDER])) {
-                $orderIndex = $ini[self::PROPERTY_ORDER];
-                unset($ini[self::PROPERTY_ORDER]);
-            } else {
-                $orderIndex = 1;
-            }
-        }
-
-        $node = $this->nodeModel->createNode($type);
-        $node->setId($id);
-
-        if ($parent) {
-            $node->setParent($parent);
-            $node->setOrderIndex($orderIndex);
-        }
-
-        $inheritPrefixLength = strlen(NodeProperty::INHERIT_PREFIX);
-        foreach ($ini as $key => $value) {
-            $inherit = false;
-
-            if (strpos($key, NodeProperty::INHERIT_PREFIX) === 0) {
-                $key = substr($key, $inheritPrefixLength);
-                $inherit = true;
-            }
-
-            $node->set($key, $value, $inherit);
-        }
-
-        return $node;
+        return $this->getNodeFromArray($array);
     }
 
     /**
@@ -538,14 +380,9 @@ class IniNodeIO extends AbstractNodeIO {
      * @return string
      */
     protected function getIniFromNode(Node $node) {
-        $properties = array();
-        $properties[self::PROPERTY_TYPE] = new NodeProperty(self::PROPERTY_TYPE, $node->getType());
-        $properties[self::PROPERTY_ID] = new NodeProperty(self::PROPERTY_ID, $node->getId());
-        $properties[self::PROPERTY_PARENT] = new NodeProperty(self::PROPERTY_PARENT, $node->getParent());
-        $properties[self::PROPERTY_ORDER] = new NodeProperty(self::PROPERTY_ORDER, $node->getOrderIndex());
-        $properties += $node->getProperties();
-
         $ini = '';
+
+        $properties = $this->getArrayFromNode($node);
         foreach ($properties as $property) {
             $ini .= $property->getIniString() . "\n";
         }
