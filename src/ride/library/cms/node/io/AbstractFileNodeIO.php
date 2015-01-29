@@ -5,6 +5,7 @@ namespace ride\library\cms\node\io;
 use ride\library\cms\expired\ExpiredRouteModel;
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\node\NodeProperty;
+use ride\library\cms\node\Node;
 use ride\library\cms\node\SiteNode;
 use ride\library\system\file\File;
 
