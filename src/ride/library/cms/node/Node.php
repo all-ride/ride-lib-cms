@@ -1431,11 +1431,41 @@ class Node {
      * @return array Array with the widget id as key and value
 	 */
     public function getInheritedWidgets($region, $section) {
+        $widgets = array();
+
         if (!$this->hasParent()) {
-            return array();
+            return $widgets;
         }
 
-        return $this->getSectionWidgets($this->getParentNode(), $region, $section, true);
+        $node = $this->getParentNode();
+
+        do {
+            $nodeWidgets = $this->getSectionWidgets($node, $region, $section, true);
+            foreach ($nodeWidgets as $block => $blockWidgets) {
+                if (isset($widgets[$block]) && $widgets[$block]) {
+                    continue;
+                }
+
+                $widgets[$block] = $blockWidgets;
+            }
+
+            $allSectionsSet = true;
+            foreach ($widgets as $block => $blockWidgets) {
+                if (!$blockWidgets) {
+                    $allSectionsSet = false;
+
+                    break;
+                }
+            }
+
+            if ($allSectionsSet) {
+                break;
+            }
+
+            $node = $node->getParentNode();
+        } while ($node);
+
+        return $widgets;
     }
 
     /**
