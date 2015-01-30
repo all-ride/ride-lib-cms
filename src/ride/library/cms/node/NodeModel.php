@@ -512,16 +512,16 @@ class NodeModel {
 
         $this->cloneNodeProperties($node, $clone, $keepOriginalName, $cloneRoutes);
 
-        $this->setNode($clone, 'Cloned ' . $node->getName(), false);
-
         if ($reorder) {
-            // reorder the siblings after the original node
+            // reorder the siblings to insert the clone
             $cloneOrderIndex = $clone->getOrderIndex();
 
             $siblings = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getParent(), 0);
             foreach ($siblings as $sibling) {
+                k($sibling->getName());
+
                 $siblingOrderIndex = $sibling->getOrderIndex();
-                if ($siblingOrderIndex < $cloneOrderIndex && $sibling->getId() == $clone->getId()) {
+                if ($siblingOrderIndex < $cloneOrderIndex) {
                     continue;
                 }
 
@@ -531,12 +531,13 @@ class NodeModel {
             }
         }
 
+        $this->setNode($clone, 'Cloned ' . $node->getName(), false);
+
         if ($recursive) {
             // clone the children
-            $children = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getPath(), 0);
-
             $path = $clone->getPath();
 
+            $children = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getPath(), 0);
             foreach ($children as $child) {
                 $this->cloneNode($child, true, false, true, $cloneRoutes, $path, false);
             }
