@@ -355,23 +355,14 @@ class IniNodeIO extends AbstractFileNodeIO {
      * @return \ride\library\cms\node\Node
      */
     protected function getNodeFromIni($ini) {
-        $array = $this->parseIni($ini);
-
-        return $this->getNodeFromArray($array);
-    }
-
-    /**
-     * Parse the INI in a array
-     * @param string $ini INI contents
-     * @return array
-     */
-    protected function parseIni($ini) {
         $parsedIni = @parse_ini_string($ini, true);
         if ($parsedIni === false) {
             throw new CmsException('Could not parse ini: ' . $ini);
         }
 
-        return $this->configHelper->flattenConfig($parsedIni);
+        $array = $this->configHelper->flattenConfig($parsedIni);
+
+        return $this->getNodeFromArray($array);
     }
 
     /**
@@ -417,7 +408,7 @@ class IniNodeIO extends AbstractFileNodeIO {
             return;
         }
 
-        // publish revsion exists, archive the revision before publishing
+        // publish revision exists, archive the revision before publishing
         $archiveDirectory = $this->path->getChild($siteId . '/' . $this->archiveName . '/' . date('YmdHis'));
         $publishDirectory->copy($archiveDirectory);
 
@@ -470,7 +461,7 @@ class IniNodeIO extends AbstractFileNodeIO {
             $publishSite = null;
         }
 
-        // handle expired routes
+        // process and merge the necessairy nodes
         try {
             $oldNode = $this->getNode($siteId, $revision, $nodeId);
 
@@ -519,7 +510,7 @@ class IniNodeIO extends AbstractFileNodeIO {
                 }
             }
         } catch (NodeNotFoundException $exception) {
-
+            // new node in the revision
         }
 
         // check for new widgets
@@ -544,17 +535,20 @@ class IniNodeIO extends AbstractFileNodeIO {
             }
         }
 
-        // write the channged nodes
+        // write the changed nodes
         foreach ($changedNodes as $changedNode) {
             $this->writeNode($changedNode);
         }
 
         // write the node file to the publish directory
         $nodeFile = $this->getNodeFile($node);
+
         $publishFile = $publishDirectory->getChild($nodeFile->getName());
         if ($nodeFile->exists()) {
+            // node has been created or updated
             $nodeFile->copy($publishFile);
         } elseif ($publishFile->exists()) {
+            // node has been deleted
             $publishFile->delete();
         }
     }
