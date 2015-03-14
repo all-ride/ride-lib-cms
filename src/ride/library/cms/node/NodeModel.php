@@ -462,7 +462,7 @@ class NodeModel {
      * @param boolean $keepOriginalName Set to true to keep the name untouched,
      * else a suffix like (clone) or (clone 2, 3 ...) will be added to the name
      * of the clone
-     * @param boolean $cloneRoutes Set to true to clone the routes of the nodes.
+     * @param boolean $cloneRoutesAndId Set to true to clone the routes of the nodes.
      * This will only work when copying a root node, else a validation error
      * will occur
      * @param boolean $newParent Provide a new parent for the clone, needed for
@@ -470,19 +470,24 @@ class NodeModel {
      * @param boolean $autoPublish Set to false to skip auto publishing
      * @return null
      */
-    public function cloneNode(Node $node, $recursive = true, $reorder = true, $keepOriginalName = false, $cloneRoutes = null, $newParent = null, $autoPublish = true) {
+    public function cloneNode(Node $node, $recursive = true, $reorder = null, $keepOriginalName = false, $cloneRoutesAndId = null, $newParent = null, $autoPublish = true) {
         $id = $node->getId();
         $rootNodeId = $node->getRootNodeId();
+        $isRootNode = $id === $rootNodeId;
 
-        if ($id == $rootNodeId) {
-            $this->cloneTable = array();
+        if ($reorder === null) {
+            if ($isRootNode) {
+                $reorder = false;
+            } else {
+                $reorder = true;
+            }
         }
 
-        if ($cloneRoutes === null) {
-            if ($id == $rootNodeId) {
-                $cloneRoutes = true;
+        if ($cloneRoutesAndId === null) {
+            if ($isRootNode) {
+                $cloneRoutesAndId = true;
             } else {
-                $cloneRoutes = false;
+                $cloneRoutesAndId = false;
             }
         }
 
@@ -491,8 +496,12 @@ class NodeModel {
         }
 
         $nodeType = $this->nodeTypeManager->getNodeType($node->getType());
+
         $clone = $nodeType->createNode();
         $clone->setRevision($node->getRevision());
+        if (!$isRootNode && $cloneRoutesAndId) {
+            $clone->setId($node->getId());
+        }
 
         if ($newParent) {
             $clone->setParent($newParent);
@@ -501,7 +510,7 @@ class NodeModel {
         }
 
         if ($clone->getParent()) {
-            $clone->setParentNode($this->io->getNode($node->getRootNodeId(), $node->getRevision(), $clone->getParentNodeId()));
+            $clone->setParentNode($this->io->getNode($clone->getRootNodeId(), $node->getRevision(), $clone->getParentNodeId()));
         }
 
         if ($reorder) {
@@ -510,7 +519,7 @@ class NodeModel {
             $clone->setOrderIndex($node->getOrderIndex());
         }
 
-        $this->cloneNodeProperties($node, $clone, $keepOriginalName, $cloneRoutes);
+        $this->cloneNodeProperties($node, $clone, $keepOriginalName, $cloneRoutesAndId);
 
         if ($reorder) {
             // reorder the siblings to insert the clone
@@ -518,8 +527,6 @@ class NodeModel {
 
             $siblings = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getParent(), 0);
             foreach ($siblings as $sibling) {
-                k($sibling->getName());
-
                 $siblingOrderIndex = $sibling->getOrderIndex();
                 if ($siblingOrderIndex < $cloneOrderIndex) {
                     continue;
@@ -539,39 +546,8 @@ class NodeModel {
 
             $children = $this->io->getChildren($node->getRootNodeId(), $node->getRevision(), $node->getPath(), 0);
             foreach ($children as $child) {
-                $this->cloneNode($child, true, false, true, $cloneRoutes, $path, false);
+                $this->cloneNode($child, true, false, true, $cloneRoutesAndId, $path, false);
             }
-        }
-
-        if (isset($this->cloneTable)) {
-            $this->cloneTable[$id] = $clone->getId();
-        }
-
-        if ($id == $node->getRootNodeId()) {
-            // we are cloning a site, update the node references in the properties
-            $nodes = $this->getNodesByPath($clone->getId());
-            foreach ($nodes as $node) {
-                $hasChanged = false;
-
-                $properties = $node->getProperties();
-                foreach ($properties as $key => $property) {
-                    if (substr($key, -5) != '.node') {
-                        continue;
-                    }
-
-                    if (isset($this->cloneTable[$property->getValue()])) {
-                        $property->setValue($this->cloneTable[$property->getValue()]);
-
-                        $hasChanged = true;
-                    }
-                }
-
-                if ($hasChanged) {
-                    $this->setNode($node, "Updated node references for clone of " . $node->getName(), false);
-                }
-            }
-
-            unset($this->cloneTable);
         }
 
         if ($newParent === null) {
@@ -582,7 +558,7 @@ class NodeModel {
         $this->setNode($clone->getRootNode(), 'Updated widgets for clone of ' . $node->getName(), false);
 
         // perform auto publishing if enabled
-        if ($autoPublish && $node->getRootNode()->isAutoPublish()) {
+        if (!$isRootNode && $autoPublish && $node->getRootNode()->isAutoPublish()) {
             $this->publishNode($node);
         }
 
@@ -600,8 +576,9 @@ class NodeModel {
     protected function cloneNodeProperties(Node $source, Node $destination, $keepOriginalName, $cloneRoutes) {
         $widgetPropertyPrefixLength = strlen(Node::PROPERTY_WIDGET) + 1;
 
-        $site = $destination->getRootNode();
-        if (!$site) {
+        try {
+            $site = $destination->getRootNode();
+        } catch (CmsException $exception) {
             $site = $destination;
         }
 
@@ -673,11 +650,16 @@ class NodeModel {
             if (!$keepOriginalName && strpos($key, Node::PROPERTY_NAME . '.') === 0) {
                 // add copy suffix to the name
                 $locale = str_replace(Node::PROPERTY_NAME . '.', '', $key);
-                $children = $this->io->getChildren($source->getRootNodeId(), $source->getRevision(), $source->getParent(), 0);
+
+                if ($source->getLevel() === 0) {
+                    $children = $this->io->getSites();
+                } else {
+                    $children = $this->io->getChildren($source->getRootNodeId(), $source->getRevision(), $source->getParent(), 0);
+                }
 
                 $baseName = $value;
                 $name = $baseName . ' (clone)';
-                $index = 1;
+                $index = 2;
 
                 do {
                     $found = false;
@@ -689,6 +671,7 @@ class NodeModel {
                             $index++;
 
                             $found = true;
+
                             break;
                         }
                     }
