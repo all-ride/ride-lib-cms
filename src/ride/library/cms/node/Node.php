@@ -650,6 +650,53 @@ class Node {
         return $default;
     }
 
+	/**
+	 * Gets a localized property
+     * @param string $locale Code of the locale
+	 * @param string $key Key of the property
+	 * @param mixed $default default value for when the property is not set
+ 	 * @return mixed Property value or $default if the property was not set
+	 */
+	public function getLocalized($locale, $key, $default = null) {
+        $this->checkPropertyKey($key);
+
+        $properties = $this->getProperties($key, true);
+
+        if (isset($properties[$key . '.' . $locale])) {
+            return $properties[$key . '.' . $locale]->getValue();
+        } elseif (isset($properties[$key])) {
+            return $properties[$key]->getValue();
+        }
+
+        return $default;
+	}
+
+	/**
+	 * Sets a localized property
+     * @param string $locale Code of the locale
+	 * @param string $key Key of the property
+	 * @param mixed $value Value to set
+ 	 * @return
+	 */
+    public function setLocalized($locale, $key, $value) {
+        $properties = $this->getProperties($key, true);
+        if (isset($properties[$key . '.' . $locale])) {
+            if ($properties[$key . '.' . $locale]->getValue() === $value) {
+                return;
+            }
+        } elseif (isset($properties[$key])) {
+            if ($properties[$key]->getValue() === $value) {
+                return;
+            }
+        }
+
+        if (!$properties) {
+            $this->set($key, $value);
+        } else {
+            $this->set($key . '.' . $locale, $value);
+        }
+    }
+
     /**
      * Checks whether a key is a non empty string
      * @param mixed $key Key for a property
@@ -673,25 +720,29 @@ class Node {
 
     /**
      * Gets the properties of this node
+     * @param string $prefix Prefix of the properties to fetch
+     * @param boolean $inherited True to look in inherited properties, false to
+     * only look in this node
+     * @param boolean $inheritedPropertyRequired True to only return the value
+     * if the property will inherit, needed internally for recursive lookup
      * @return array Array with the property key as key and a NodeProperty
      * instance as value
      */
-    public function getProperties($prefix = null) {
-        if ($prefix === null) {
-            return $this->properties;
-        }
-
-        $result = array();
-
+    public function getProperties($prefix = null, $inherited = false, $inheritedPropertyRequired = false) {
+        $properties = array();
         foreach ($this->properties as $key => $property) {
-            if (strpos($key, $prefix) !== 0) {
+            if (($prefix && strpos($key, $prefix) !== 0) || ($inheritedPropertyRequired && !$property->getInherit())) {
                 continue;
             }
 
-            $result[$key] = $property;
+            $properties[$key] = $property;
         }
 
-        return $result;
+        if ($inherited && $this->parentNode) {
+            $properties += $this->parentNode->getProperties($prefix, true, true);
+        }
+
+        return $properties;
     }
 
     /**

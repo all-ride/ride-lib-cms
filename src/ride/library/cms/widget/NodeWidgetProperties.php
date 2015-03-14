@@ -148,6 +148,28 @@ class NodeWidgetProperties implements WidgetProperties {
 	}
 
 	/**
+	 * Gets a localized property from the widget
+     * @param string $locale Code of the locale
+	 * @param string $key Key of the property relative to widget.[widgetId]
+	 * @param mixed $default default value for when the property is not set
+ 	 * @return mixed Property value or $default if the property was not set
+	 */
+	public function getLocalizedWidgetProperty($locale, $key, $default = null) {
+	    return $this->node->getLocalized($locale, $this->widgetPropertyPrefix . $key, $default);
+	}
+
+	/**
+	 * Sets a localized property to the widget
+     * @param string $locale Code of the locale
+	 * @param string $key Key of the property relative to widget.[widgetId]
+	 * @param mixed $value Value to set
+ 	 * @return
+	 */
+    public function setLocalizedWidgetProperty($locale, $key, $value) {
+        $this->node->setLocalized($locale, $this->widgetPropertyPrefix . $key, $value);
+    }
+
+	/**
 	 * Sets the cache type
 	 * @param string $type
 	 * @return null
