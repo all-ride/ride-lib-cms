@@ -197,10 +197,11 @@ class Cms {
     /**
      * Clones a node
      * @param \ride\library\cms\node\Node $node Node to clone
+     * @param boolean $recursive Flag to see if child nodes should be cloned
      * @return \ride\library\cms\node\Node Instance of the clone
      */
-    public function cloneNode(Node $node) {
-        return $this->nodeModel->cloneNode($node);
+    public function cloneNode(Node $node, $recursive = true) {
+        return $this->nodeModel->cloneNode($node, $recursive);
     }
 
     /**
