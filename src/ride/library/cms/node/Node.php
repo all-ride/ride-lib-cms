@@ -81,6 +81,18 @@ class Node {
     const PROPERTY_NAME = 'name';
 
     /**
+     * Property key for the description
+     * @var string
+     */
+    const PROPERTY_DESCRIPTION = 'description';
+
+    /**
+     * Property key for the image
+     * @var string
+     */
+    const PROPERTY_IMAGE = 'image';
+
+    /**
      * Property key for the hide in menu flag
      * @var string
      */
@@ -801,6 +813,44 @@ class Node {
 
         // no name
         return null;
+    }
+
+    /**
+     * Sets the description of this node
+     * @param string $locale Code of the locale
+     * @param string $description Description of this node
+     * @return null
+     */
+    public function setDescription($locale, $description) {
+        $this->setLocalized($locale, self::PROPERTY_DESCRIPTION, $description);
+    }
+
+    /**
+     * Gets the description of this node
+     * @param string $locale Code of the locale
+     * @return string|null Description of this node if set, null otherwise
+     */
+    public function getDescription($locale) {
+        return $this->getLocalized($locale, self::PROPERTY_DESCRIPTION);
+    }
+
+    /**
+     * Sets the image of this node
+     * @param string $locale Code of the locale
+     * @param string $image Path to the image
+     * @return null
+     */
+    public function setImage($locale, $image) {
+        $this->setLocalized($locale, self::PROPERTY_IMAGE, $image);
+    }
+
+    /**
+     * Gets the image of this node
+     * @param string $locale Code of the locale
+     * @return string|null Path to the image if set, null otherwise
+     */
+    public function getImage($locale) {
+        return $this->getLocalized($locale, self::PROPERTY_IMAGE);
     }
 
     /**
