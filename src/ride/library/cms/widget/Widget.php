@@ -42,16 +42,37 @@ interface Widget extends LibraryWidget {
     public function getBreadcrumbs();
 
     /**
+     * Gets whether this widget caches when auto cache is enabled
+     * @return boolean
+     */
+    public function isAutoCache();
+
+    /**
      * Gets whether to display this widget as page
      * @return boolean True to only display this widget
      */
     public function isContent();
 
     /**
-     * Gets whether this is the only widget to be displayed in the containing region
+     * Gets whether this is the only widget to be displayed in the containing
+     * region
      * @return boolean True to only display this widget in the region
      */
     public function isRegion();
+
+    /**
+     * Gets whether this is the only widget to be displayed in the containing
+     * section
+     * @return boolean True to only display this widget in the section
+     */
+    public function isSection();
+
+    /**
+     * Gets whether this is the only widget to be displayed in the containing
+     * block
+     * @return boolean True to only display this widget in the block
+     */
+    public function isBlock();
 
     /**
      * Gets whether this widget contains user content
