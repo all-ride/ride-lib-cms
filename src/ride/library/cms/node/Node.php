@@ -87,6 +87,12 @@ class Node {
     const PROPERTY_DESCRIPTION = 'description';
 
     /**
+     * Property key for the full width flag
+     * @var string
+     */
+    const PROPERTY_FULL_WIDTH = 'full.width';
+
+    /**
      * Property key for the image
      * @var string
      */
@@ -141,16 +147,16 @@ class Node {
     const PROPERTY_REGION = 'region';
 
     /**
-     * Property key for the sections of a region
-     * @var string
-     */
-    const PROPERTY_SECTIONS = 'sections';
-
-    /**
      * Property key for the route
      * @var unknown_type
      */
     const PROPERTY_ROUTE = 'route';
+
+    /**
+     * Property key for the sections of a region
+     * @var string
+     */
+    const PROPERTY_SECTIONS = 'sections';
 
     /**
      * Property key for the security flag
@@ -163,6 +169,12 @@ class Node {
      * @var string
      */
     const PROPERTY_THEME = 'theme';
+
+    /**
+     * Property key for the title
+     * @var string
+     */
+    const PROPERTY_TITLE = 'title';
 
     /**
      * Property key for style
@@ -1369,12 +1381,68 @@ class Node {
     }
 
     /**
+     * Sets the section title
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $locale Code of the locale
+     * @param string $title Title for the section
+     * @return null
+     */
+    public function setSectionTitle($region, $section, $locale, $title) {
+        $sections = $this->getSections($region);
+        if (!isset($sections[$section])) {
+            throw new CmsException('Could not set style of section: ' . $section . ' does not exist.');
+        }
+
+        $this->setLocalized($locale, self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_TITLE, $title);
+    }
+
+    /**
+     * Gets the section title
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $locale Code of the locale
+     * @param string $default Default value for when no title set
+     * @return string Title for the section
+     */
+    public function getSectionTitle($region, $section, $locale, $default = null) {
+        return $this->getLocalized($locale, self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_TITLE, $default);
+    }
+
+    /**
+     * Sets whether the section uses the full width
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param boolean $isFullWidth
+     * @return null
+     */
+    public function setIsSectionFullWidth($region, $section, $isFullWidth) {
+        $sections = $this->getSections($region);
+        if (!isset($sections[$section])) {
+            throw new CmsException('Could not set properties of section: ' . $section . ' does not exist.');
+        }
+
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_FULL_WIDTH, $isFullWidth);
+    }
+
+    /**
+     * Gets whether the section uses the full width
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $default Default value for when no title set
+     * @return string Whether the section uses full width
+     */
+    public function isSectionFullWidth($region, $section, $default = null) {
+        return $this->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_FULL_WIDTH, $default);
+    }
+
+    /**
      * Sets the section style
      * @param string $region Name of the region
      * @param string $section Name of the section
      * @param string $style Extra style class for the section
      * @return null
-          */
+     */
     public function setSectionStyle($region, $section, $style) {
         $sections = $this->getSections($region);
         if (!isset($sections[$section])) {
