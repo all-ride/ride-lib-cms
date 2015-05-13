@@ -38,7 +38,7 @@ class RedirectNode extends Node {
      * @return null
      */
     public function setRedirectUrl($locale, $url) {
-        $this->set(self::PROPERTY_URL . '.' . $locale, $url, false);
+        $this->setLocalized($locale, self::PROPERTY_URL, $url);
     }
 
     /**
@@ -47,7 +47,7 @@ class RedirectNode extends Node {
      * @return string|null The redirect URL
      */
     public function getRedirectUrl($locale) {
-        return $this->get(self::PROPERTY_URL . '.' . $locale);
+        return $this->getLocalized($locale, self::PROPERTY_URL);
     }
 
     /**
@@ -57,7 +57,7 @@ class RedirectNode extends Node {
      * @return null
      */
     public function setRedirectNode($locale, $node) {
-        $this->set(self::PROPERTY_NODE . '.' . $locale, $node, false);
+        $this->setLocalized($locale, self::PROPERTY_NODE, $node);
     }
 
     /**
@@ -66,7 +66,7 @@ class RedirectNode extends Node {
      * @return string|null The id of the node
      */
     public function getRedirectNode($locale) {
-        return $this->get(self::PROPERTY_NODE . '.' . $locale);
+        return $this->getLocalized($locale, self::PROPERTY_NODE);
     }
 
 }
