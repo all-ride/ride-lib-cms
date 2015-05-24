@@ -306,19 +306,26 @@ class NodeModel {
                 continue;
             }
 
-            $found = false;
+            $regions = array();
 
+            // lookup regions based on widget placement
             $properties = $node->getProperties();
             foreach ($properties as $key => $property) {
-                if (strpos($key, Node::PROPERTY_REGION . '.') !== 0 || strpos($key, '.' . Node::PROPERTY_SECTIONS) === false) {
+                if (strpos($key, Node::PROPERTY_REGION . '.') !== 0 || strpos($key, '.' . Node::PROPERTY_WIDGETS) === false) {
                     continue;
                 }
 
-                $region = str_replace(Node::PROPERTY_REGION . '.', '', $key);
-                $region = str_replace('.' . Node::PROPERTY_SECTIONS, '', $region);
+                $tokens = explode('.', $key);
+                if (count($tokens) != 4) {
+                    continue;
+                }
 
-                $sections = explode(NodeProperty::LIST_SEPARATOR, $property->getValue());
-                foreach ($sections as $section) {
+                $regions[$tokens[1]][$tokens[2]] = true;
+            }
+
+            // check widgets in resolved regions
+            foreach ($regions as $region => $sections) {
+                foreach ($sections as $section => $null) {
                     $blocks = $node->getWidgets($region, $section);
                     foreach ($blocks as $blockId => $widgets) {
                         foreach ($widgets as $widgetId => $widget) {
