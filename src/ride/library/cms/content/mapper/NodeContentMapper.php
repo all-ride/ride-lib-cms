@@ -19,14 +19,14 @@ class NodeContentMapper extends AbstractContentMapper {
      */
     public function getContent($site, $locale, $data) {
         if (!$data instanceof Node) {
-            $data = $this->nodeModel->getNode($data);
+            $data = $this->nodeModel->getNode($site, $this->nodeModel->getDefaultRevision(), $data);
         }
 
         if ($data->getRootNodeId() != $site) {
             return null;
         }
 
-        return new Content($data->getType() . 'Node', $data->getName($locale), $this->baseScript . $data->getRoute($locale), null, null, $data);
+        return new Content($data->getType() . 'Node', $data->getName($locale), $data->getUrl($locale, $this->baseScript), $data->getDescription($locale), $data->getImage($locale), $data);
     }
 
 }
