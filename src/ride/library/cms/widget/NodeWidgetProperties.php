@@ -5,6 +5,7 @@ namespace ride\library\cms\widget;
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\NodeProperty;
+use ride\library\security\model\User;
 use ride\library\widget\WidgetProperties;
 use ride\library\reflection\Boolean;
 
@@ -274,6 +275,47 @@ class NodeWidgetProperties implements WidgetProperties {
         }
 
         return false;
+    }
+
+    /**
+     * Gets whether the provided user is allowed to view the widget
+     * @param ride\library\security\model\User $user
+     * @return boolean True if allowed, false otherwise
+     */
+    public function isAllowed(User $user = null) {
+        $security = $this->getWidgetProperty(Node::PROPERTY_SECURITY, Node::AUTHENTICATION_STATUS_EVERYBODY);
+        if (!$security || $security === Node::AUTHENTICATION_STATUS_EVERYBODY) {
+            return true;
+        }
+
+        if ($security === Node::AUTHENTICATION_STATUS_ANONYMOUS) {
+            if ($user) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        if (!$user) {
+            return false;
+        }
+
+        if ($security === Node::AUTHENTICATION_STATUS_AUTHENTICATED) {
+            return true;
+        }
+
+        $isAllowed = true;
+
+        $permissions = explode(',', $security);
+        foreach ($permissions as $permission) {
+            if (!$user->isPermissionGranted($permission)) {
+                $isAllowed = false;
+
+                break;
+            }
+        }
+
+        return $isAllowed;
     }
 
 }
