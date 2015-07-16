@@ -55,24 +55,23 @@ class GenericNodeValidator implements NodeValidator {
         $propertyPrefix = Node::PROPERTY_ROUTE . '.';
         $lengthPropertyPrefix = strlen($propertyPrefix);
 
+        // loop all properties
         $properties = $node->getProperties();
         foreach ($properties as $key => $property) {
             if (strpos($key, $propertyPrefix) !== 0) {
+                // we're only interested in route properties
                 continue;
             }
 
-            $locale = substr($key, $lengthPropertyPrefix);
+            $route = $property->getValue();
 
-            $route = rtrim(ltrim($property->getValue(), '/'), '/');
+            // normalize route
+            $route = trim($route, '/');
 
             $tokens = explode('/', $route);
             foreach ($tokens as $index => $token) {
                 if ($token) {
-
                     $token = StringHelper::safeString($token);
-
-                    $token = StringHelper::safeString($token);
-
                 }
 
                 if (empty($token)) {
@@ -84,33 +83,30 @@ class GenericNodeValidator implements NodeValidator {
 
             $route = '/' . implode('/', $tokens);
 
+            // check for duplicate routes
             $errors = array();
-
             foreach ($modelNodes as $modelNode) {
                 $modelNodeId = $modelNode->getId();
                 if ($modelNodeId == $nodeId || $modelNode->getRootNodeId() != $rootNodeId || !$modelNode->hasParent()) {
+                    // same node, different site or root node
                     continue;
                 }
 
-                $modelNodeProperties = $modelNode->getProperties();
-                foreach ($modelNodeProperties as $propertyKey => $propertyValue) {
-                    if (strpos($key, $propertyPrefix) !== 0) {
-                        continue;
-                    }
-
-                    if ($propertyValue->getValue() != $route) {
+                $modelNodeRoutes = $modelNode->getRoutes();
+                foreach ($modelNodeRoutes as $locale => $modelNodeRoute) {
+                    if ($route != $modelNodeRoute) {
                         continue;
                     }
 
                     $errors[$modelNodeId] = new ValidationError(
                         'error.route.used.node',
-                        "Route '%route%' is already used by node %node%",
+                        "Route '%route%' is already used by node %node% in locale %locale%",
                         array(
                             'route' => $route,
                             'node' => $modelNodeId,
+                            'locale' => $locale,
                         )
                     );
-
                 }
             }
 
@@ -118,6 +114,7 @@ class GenericNodeValidator implements NodeValidator {
                 $exception->addErrors(Node::PROPERTY_ROUTE, array($error));
             }
 
+            // update property with normalized route
             $property->setValue($route);
         }
     }
