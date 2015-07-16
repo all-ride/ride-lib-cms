@@ -933,6 +933,22 @@ class Node {
     }
 
     /**
+     * Gets all the full URLs of this node
+     * @param string $baseUrl Fallback for when the root node is no site node or
+     * when it has no base URL set
+     * @return array Array with the locale code as key and the URL as value
+     */
+    public function getUrls($baseUrl) {
+        $urls = $this->getRoutes();
+
+        foreach ($urls as $locale => $route) {
+            $urls[$locale] = $this->getUrl($locale, $baseUrl);
+        }
+
+        return $urls;
+    }
+
+    /**
      * Makes an absolute URL for the provided relative URL
      * @param string $locale Code of the current locale
      * @param string $baseUrl Base URL to the system
