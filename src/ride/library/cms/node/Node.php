@@ -75,6 +75,12 @@ class Node {
     const PROPERTY_META = 'meta';
 
     /**
+     * Property key for a header
+     * @var string
+     */
+    const PROPERTY_HEADER = 'header';
+
+    /**
      * Property key for the name
      * @var string
      */
@@ -1223,16 +1229,19 @@ class Node {
         $prefix = self::PROPERTY_META . '.' . $locale . '.';
 
         if (is_array($name)) {
+            // remove all meta
             foreach ($this->properties as $key => $property) {
                 if (strpos($key, $prefix) === 0) {
                     unset($this->properties[$key]);
                 }
             }
 
+            // set it again
             foreach ($name as $property => $content) {
                 $this->set($prefix . $property, $content);
             }
         } else {
+            // set a single meta
             $this->set($prefix . $name, $value);
         }
     }
@@ -1270,6 +1279,68 @@ class Node {
         }
 
         return $meta;
+    }
+
+    /**
+     * Sets custom response headers
+     * @param string $locale Code of the locale
+     * @param string|array $header Name of the header or an array of headers
+     * @param string $value Value for the header
+     * @return null
+     */
+    public function setHeader($locale, $header, $value = null) {
+        $prefix = self::PROPERTY_HEADER . '.' . $locale . '.';
+
+        if (is_array($header)) {
+            // remove all headers
+            foreach ($this->properties as $key => $property) {
+                if (strpos($key, $prefix) === 0) {
+                    unset($this->properties[$key]);
+                }
+            }
+
+            // set it again
+            foreach ($header as $name => $value) {
+                $this->set($prefix . strtolower($name), $value);
+            }
+        } else {
+            $this->set($prefix . strtolower($header), $value);
+        }
+    }
+
+    /**
+     * Gets the custom headers of this node
+     * @param string $locale Code of the locale
+     * @param string $header Name of the header
+     * @param boolean $inherited
+     * @return string|array Value of the property when a header has been
+     * provided, all the header properties in an array otherwise
+     */
+    public function getHeader($locale, $header = null, $inherited = true) {
+        $prefix = self::PROPERTY_HEADER . '.' . $locale . '.';
+
+        if ($header) {
+            return $this->get($prefix . strtolower($header), null, $inherited);
+        }
+
+        $prefixLength = strlen($prefix);
+
+        $parentNode = $this->getParentNode();
+        if ($inherited && $parentNode) {
+            $headers = $parentNode->getHeader($locale, null, true);
+        } else {
+            $headers = array();
+        }
+
+        foreach ($this->properties as $key => $property) {
+            if (strpos($key, $prefix) !== 0) {
+                continue;
+            }
+
+            $headers[str_replace($prefix, '', $key)] = $property->getValue();
+        }
+
+        return $headers;
     }
 
     /**
