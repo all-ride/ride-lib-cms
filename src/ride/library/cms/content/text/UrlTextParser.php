@@ -20,7 +20,7 @@ class UrlTextParser extends AbstractTextParser {
         }
 
         $html = new simple_html_dom();
-        if ($html->load($text) === false) {
+        if ($html->load($text, true, false) === false) {
             return $text;
         }
 
