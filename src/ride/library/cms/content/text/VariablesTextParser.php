@@ -74,7 +74,7 @@ class VariablesTextParser extends AbstractTextParser {
             }
 
             $positionClose = strpos($text, self::CLOSE, $positionOpen);
-            if ($positionOpen === false) {
+            if ($positionClose === false) {
                 break;
             }
 
