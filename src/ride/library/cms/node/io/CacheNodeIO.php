@@ -135,8 +135,6 @@ class CacheNodeIO extends AbstractNodeIO {
         }
 
         $this->loadNodes();
-
-        $this->needsWrite = true;
     }
 
     /**
@@ -163,9 +161,7 @@ class CacheNodeIO extends AbstractNodeIO {
      */
     protected function writeCache() {
         if (!$this->sites || !$this->nodes) {
-            $this->needsClear = true;
-
-            return;
+            $this->loadNodes();
         }
 
         // generate the PHP code for the obtained nodes
@@ -248,6 +244,8 @@ class CacheNodeIO extends AbstractNodeIO {
         if (isset($this->needsClear)) {
             unset($this->needsClear);
         }
+
+        $this->needsWrite = true;
     }
 
     /**
