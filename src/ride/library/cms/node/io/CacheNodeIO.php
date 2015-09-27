@@ -31,12 +31,6 @@ class CacheNodeIO extends AbstractNodeIO {
     private $file;
     
     /**
-     * Cache controls
-     * @var array
-     */
-    private $cacheControls;
-
-    /**
      * Constructs a new cached NodeIO
      * @param \ride\library\cms\node\io\NodeIO $io NodeIO which needs a cache
      * @param \ride\library\system\file\File $file File for the cache
@@ -45,16 +39,6 @@ class CacheNodeIO extends AbstractNodeIO {
     public function __construct(NodeIO $io, File $file) {
         $this->io = $io;
         $this->setFile($file);
-        $this->cacheControls = array();
-    }
-
-    /**
-     * Adds a cache control to warm and clear when this IO clears
-     * @param \ride\library\cache\control\CacheControl $cacheControl
-     * @return null
-     */
-    public function addCacheControl(CacheControl $cacheControl) {
-        $this->cacheControls[$cacheControl->getName()] = $cacheControl;
     }
 
     /**
@@ -67,7 +51,7 @@ class CacheNodeIO extends AbstractNodeIO {
         }
 
         if (isset($this->needsWrite) && $this->needsWrite) {
-            $this->writeCache();
+            $this->warmCache();
         }
     }
 
@@ -242,10 +226,6 @@ class CacheNodeIO extends AbstractNodeIO {
         // write the PHP code to file
         $this->file->write($php);
 
-        foreach ($this->cacheControls as $cacheControl) {
-            $cacheControl->warm();
-        }
-
         if (isset($this->needsWrite)) {
             unset($this->needsWrite);
         }
@@ -264,10 +244,6 @@ class CacheNodeIO extends AbstractNodeIO {
 
         if (isset($this->needsClear)) {
             unset($this->needsClear);
-        }
-        
-        foreach ($this->cacheControls as $cacheControl) {
-            $cacheControl->clear();
         }
 
         $this->needsWrite = true;
