@@ -2,6 +2,7 @@
 
 namespace ride\library\cms\node\io;
 
+use ride\library\cache\control\CacheControl;
 use ride\library\cms\node\NodeModel;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\SiteNode;
@@ -28,6 +29,12 @@ class CacheNodeIO extends AbstractNodeIO {
      * @var \ride\library\system\file\File
      */
     private $file;
+    
+    /**
+     * Cache controls
+     * @var array
+     */
+    private $cacheControls;
 
     /**
      * Constructs a new cached NodeIO
@@ -38,6 +45,16 @@ class CacheNodeIO extends AbstractNodeIO {
     public function __construct(NodeIO $io, File $file) {
         $this->io = $io;
         $this->setFile($file);
+        $this->cacheControls = array();
+    }
+
+    /**
+     * Adds a cache control to warm and clear when this IO clears
+     * @param \ride\library\cache\control\CacheControl $cacheControl
+     * @return null
+     */
+    public function addCacheControl(CacheControl $cacheControl) {
+        $this->cacheControls[$cacheControl->getName()] = $cacheControl;
     }
 
     /**
@@ -156,30 +173,6 @@ class CacheNodeIO extends AbstractNodeIO {
     }
 
     /**
-     * Writes the sites and nodes to the cache
-     * @return null
-     */
-    protected function writeCache() {
-        if (!$this->sites || !$this->nodes) {
-            $this->loadNodes();
-        }
-
-        // generate the PHP code for the obtained nodes
-        $php = $this->generatePhp($this->sites, $this->nodes);
-
-        // make sure the parent directory of the script exists
-        $parent = $this->file->getParent();
-        $parent->create();
-
-        // write the PHP code to file
-        $this->file->write($php);
-
-        if (isset($this->needsWrite)) {
-            unset($this->needsWrite);
-        }
-    }
-
-    /**
      * Writes the provided node to the data source
      * @param \ride\library\cms\node\Node $node Node to write
      * @return null
@@ -231,6 +224,34 @@ class CacheNodeIO extends AbstractNodeIO {
     }
 
     /**
+     * Writes the sites and nodes to the cache
+     * @return null
+     */
+    public function warmCache() {
+        if (!$this->sites || !$this->nodes) {
+            $this->loadNodes();
+        }
+
+        // generate the PHP code for the obtained nodes
+        $php = $this->generatePhp($this->sites, $this->nodes);
+
+        // make sure the parent directory of the script exists
+        $parent = $this->file->getParent();
+        $parent->create();
+
+        // write the PHP code to file
+        $this->file->write($php);
+
+        foreach ($this->cacheControls as $cacheControl) {
+            $cacheControl->warm();
+        }
+
+        if (isset($this->needsWrite)) {
+            unset($this->needsWrite);
+        }
+    }
+
+    /**
      * Clears the cache of this node IO
      * @return null
      */
@@ -243,6 +264,10 @@ class CacheNodeIO extends AbstractNodeIO {
 
         if (isset($this->needsClear)) {
             unset($this->needsClear);
+        }
+        
+        foreach ($this->cacheControls as $cacheControl) {
+            $cacheControl->clear();
         }
 
         $this->needsWrite = true;
