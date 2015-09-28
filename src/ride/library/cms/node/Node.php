@@ -5,7 +5,8 @@ namespace ride\library\cms\node;
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\widget\NodeWidgetProperties;
 use ride\library\reflection\Boolean;
-use ride\library\security\model\User;
+use ride\library\security\exception\AuthenticationException;
+use ride\library\security\SecurityManager;
 
 use \DateTime;
 
@@ -1179,13 +1180,19 @@ class Node {
 
     /**
      * Gets whether the provided user is allowed to view this node
-     * @param ride\library\security\model\User $user
+     * @param ride\library\security\SecurityManager $securityManager
      * @return boolean True if allowed, false otherwise
      */
-    public function isAllowed(User $user = null) {
+    public function isAllowed(SecurityManager $securityManager) {
         $security = $this->get(self::PROPERTY_SECURITY, self::AUTHENTICATION_STATUS_EVERYBODY);
         if (!$security || $security === self::AUTHENTICATION_STATUS_EVERYBODY) {
             return true;
+        }
+
+        try {
+            $user = $securityManager->getUser();
+        } catch (AuthenticationException $exception) {
+            $user = null;
         }
 
         if ($security === self::AUTHENTICATION_STATUS_ANONYMOUS) {
@@ -1208,7 +1215,7 @@ class Node {
 
         $permissions = explode(',', $security);
         foreach ($permissions as $permission) {
-            if (!$user->isPermissionGranted($permission)) {
+            if (!$securityManager->isPermissionGranted($permission)) {
                 $isAllowed = false;
 
                 break;
