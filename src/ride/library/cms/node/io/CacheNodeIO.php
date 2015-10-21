@@ -29,7 +29,7 @@ class CacheNodeIO extends AbstractNodeIO {
      * @var \ride\library\system\file\File
      */
     private $file;
-    
+
     /**
      * Constructs a new cached NodeIO
      * @param \ride\library\cms\node\io\NodeIO $io NodeIO which needs a cache
@@ -73,6 +73,7 @@ class CacheNodeIO extends AbstractNodeIO {
      */
     public function setFile(File $file) {
         $this->file = $file;
+        $this->file->setLock(true);
     }
 
     /**
