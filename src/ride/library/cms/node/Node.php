@@ -734,8 +734,6 @@ class Node {
         }
 
         if (!$properties) {
-            $this->set($key, $value);
-        } else {
             $this->set($key . '.' . $locale, $value);
         }
     }
