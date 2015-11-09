@@ -55,6 +55,12 @@ class NodeVariableParser extends AbstractVariableParser {
         $node = null;
 
         switch ($tokens[0]) {
+            case 'year':
+                if (count($tokens) !== 1) {
+                    return null;
+                }
+
+                return date('Y');
             case 'node':
                 if (count($tokens) < 3) {
                     return null;
