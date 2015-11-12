@@ -5,6 +5,7 @@ namespace ride\library\cms\node\io;
 use ride\library\cms\expired\ExpiredRouteModel;
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\exception\NodeNotFoundException;
+use ride\library\cms\node\type\ReferenceNodeType;
 use ride\library\cms\node\type\SiteNodeType;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\NodeProperty;
@@ -117,6 +118,11 @@ class IniNodeIO extends AbstractFileNodeIO {
             if ($node->getType() === SiteNodeType::NAME) {
                 $node->setRevisions($sites[$node->getId()]->getRevisions());
                 $node->setDateModified($dateModified);
+            } elseif ($node->getType() === ReferenceNodeType::NAME) {
+                $referenceNodeId = $node->getReferenceNode();
+                if (isset($nodes[$referenceNodeId])) {
+                    $node->setNode($nodes[$referenceNodeId]);
+                }
             }
 
             $parentId = $node->getParentNodeId();
