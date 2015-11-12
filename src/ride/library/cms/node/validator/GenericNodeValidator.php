@@ -2,6 +2,7 @@
 
 namespace ride\library\cms\node\validator;
 
+use ride\library\cms\node\type\ReferenceNodeType;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\NodeModel;
 use ride\library\cms\node\NodeProperty;
@@ -87,8 +88,8 @@ class GenericNodeValidator implements NodeValidator {
             $errors = array();
             foreach ($modelNodes as $modelNode) {
                 $modelNodeId = $modelNode->getId();
-                if ($modelNodeId == $nodeId || $modelNode->getRootNodeId() != $rootNodeId || !$modelNode->hasParent()) {
-                    // same node, different site or root node
+                if ($modelNodeId == $nodeId || $modelNode->getRootNodeId() != $rootNodeId || !$modelNode->hasParent() || $modelNode->getType() == ReferenceNodeType::NAME) {
+                    // same node, different site or root node or a reference node
                     continue;
                 }
 
