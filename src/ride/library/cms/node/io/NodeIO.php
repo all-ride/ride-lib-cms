@@ -135,8 +135,7 @@ interface NodeIO {
      * @param \ride\library\cms\node\Node $node
      * @param string $revision
      * @param boolean $recursive Flag to see if the node's children should be
-     * published as well
-     * @return null
+     * @return array|null Nodes have been deleted
      */
     public function publish(Node $node, $revision, $recursive);
 

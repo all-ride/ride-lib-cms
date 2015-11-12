@@ -5,6 +5,7 @@ namespace ride\library\cms\node\io;
 use ride\library\cms\expired\ExpiredRouteModel;
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\exception\NodeNotFoundException;
+use ride\library\cms\node\type\ReferenceNodeType;
 use ride\library\cms\node\type\SiteNodeType;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\NodeProperty;
@@ -117,6 +118,11 @@ class IniNodeIO extends AbstractFileNodeIO {
             if ($node->getType() === SiteNodeType::NAME) {
                 $node->setRevisions($sites[$node->getId()]->getRevisions());
                 $node->setDateModified($dateModified);
+            } elseif ($node->getType() === ReferenceNodeType::NAME) {
+                $referenceNodeId = $node->getReferenceNode();
+                if (isset($nodes[$referenceNodeId])) {
+                    $node->setNode($nodes[$referenceNodeId]);
+                }
             }
 
             $parentId = $node->getParentNodeId();
@@ -382,16 +388,18 @@ class IniNodeIO extends AbstractFileNodeIO {
     }
 
     /**
-     * Publishes a node to the provided revision
+     * Publishes a site to the provided revision
      * @param \ride\library\cms\node\Node $node
      * @param string $revision
      * @param boolean $recursive Flag to see if the node's children should be
      * published as well
-     * @return null
+     * @return array|null Nodes have been deleted
      */
     public function publish(Node $node, $revision, $recursive) {
+        $deletedNodes = array();
+
         if ($node->getRevision() == $revision) {
-            return;
+            return $deletedNodes;
         }
 
         $site = $node->getRootNode();
@@ -405,7 +413,7 @@ class IniNodeIO extends AbstractFileNodeIO {
             $sourceDirectory = $this->path->getChild($siteId . '/' . $node->getRevision());
             $sourceDirectory->copy($publishDirectory);
 
-            return;
+            return $deletedNodes;
         }
 
         // publish revision exists, archive the revision before publishing
@@ -413,29 +421,38 @@ class IniNodeIO extends AbstractFileNodeIO {
         $publishDirectory->copy($archiveDirectory);
 
         // publish node
-        $this->publishNode($site, $node, $revision, $publishDirectory, false);
-
-        if ($recursive) {
-            // publish recursive nodes
-            $oldNodes = $this->getNodesByPath($siteId, $revision, $node->getPath());
-
-            $nodes = $this->getNodesByPath($siteId, $site->getRevision(), $node->getPath());
-            foreach ($nodes as $nodeId => $node) {
-                $this->publishNode($site, $node, $revision, $publishDirectory, true);
-
-                if (isset($oldNodes[$nodeId])) {
-                    unset($oldNodes[$nodeId]);
-                }
-            }
-
-            // deleted the removed nodes
-            foreach ($oldNodes as $oldNodeId => $oldNode) {
-                $oldNodeFile = $this->getNodeFile($oldNode);
-                $oldNodeFile->delete();
-            }
-
-            $this->expiredRouteModel->removeExpiredRoutesByNode($siteId, array_keys($oldNodes));
+        $deletedNode = $this->publishNode($site, $node, $revision, $publishDirectory, false);
+        if ($deletedNode) {
+            $deletedNodes[$deletedNode->getId()] = $deletedNode;
         }
+
+        if (!$recursive) {
+            return $deletedNodes;
+        }
+
+        // publish recursive nodes
+        $oldNodes = $this->getNodesByPath($siteId, $revision, $node->getPath());
+
+        $nodes = $this->getNodesByPath($siteId, $site->getRevision(), $node->getPath());
+        foreach ($nodes as $nodeId => $node) {
+            $this->publishNode($site, $node, $revision, $publishDirectory, true);
+
+            if (isset($oldNodes[$nodeId])) {
+                unset($oldNodes[$nodeId]);
+            }
+        }
+
+        // deleted the removed nodes
+        foreach ($oldNodes as $oldNodeId => $oldNode) {
+            $oldNodeFile = $this->getNodeFile($oldNode);
+            $oldNodeFile->delete();
+
+            $deletedNodes[$oldNodeId] = $oldNode;
+        }
+
+        $this->expiredRouteModel->removeExpiredRoutesByNode($siteId, array_keys($oldNodes));
+
+        return $deletedNodes;
     }
 
     /**
@@ -547,9 +564,13 @@ class IniNodeIO extends AbstractFileNodeIO {
         if ($nodeFile->exists()) {
             // node has been created or updated
             $nodeFile->copy($publishFile);
+
+            return null;
         } elseif ($publishFile->exists()) {
             // node has been deleted
             $publishFile->delete();
+
+            return $node;
         }
     }
 
