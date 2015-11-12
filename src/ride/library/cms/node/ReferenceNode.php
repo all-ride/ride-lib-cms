@@ -44,11 +44,18 @@ class ReferenceNode extends Node {
         return $this->get(self::PROPERTY_NODE);
     }
 
-
+    /**
+     * Sets the referenced node
+     * @param Node $node
+     */
     public function setNode(Node $node) {
         $this->node = $node;
     }
 
+    /**
+     * Gets the references node
+     * @return Node
+     */
     public function getNode() {
         return $this->node;
     }
@@ -68,6 +75,21 @@ class ReferenceNode extends Node {
         $node = $this->getNode();
         if ($node) {
             return $node->getName($locale, $context);
+        }
+    }
+
+    /**
+     * Set the name of this node for the provided locale
+     * @param string $locale Code of the locale
+     * @param string $name Name of the node in the provided locale
+     * @param string $context Name of the context (menu, breadcrumb, title, ...)
+     * @return null
+     */
+    public function setName($locale, $name, $context = null) {
+        if ($this->getName($locale, $context) == $name) {
+            return;
+        } else {
+            parent::setName($locale, $name, $context);
         }
     }
 
