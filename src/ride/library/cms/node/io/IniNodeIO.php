@@ -486,7 +486,7 @@ class IniNodeIO extends AbstractFileNodeIO {
             $oldRoutes = $oldNode->getRoutes();
             $newRoutes = $node->getRoutes();
 
-            if ($oldRoutes !== $newRoutes) {
+            if ($oldRoutes && $oldRoutes !== $newRoutes) {
                 foreach ($oldRoutes as $locale => $route) {
                     if (isset($newRoutes[$locale]) && $route === $newRoutes[$locale]) {
                         continue;
