@@ -940,7 +940,25 @@ class NodeModel {
             $revision = $this->getDefaultRevision();
         }
 
-        $this->io->publish($node, $revision, $recursive);
+        if ($this->eventManager) {
+            $eventArguments = array(
+                'action' => 'publish',
+                'description' => 'Publish node ' . $node->getName(),
+                'nodes' => array($node),
+                'revision' => $revision,
+                'recursive' => $recursive,
+            );
+
+            $this->eventManager->triggerEvent(self::EVENT_PRE_ACTION, $eventArguments);
+        }
+
+        $deletedNodes = $this->io->publish($node, $revision, $recursive);
+
+        if ($this->eventManager) {
+            $eventArguments['deletedNodes'] = $deletedNodes;
+
+            $this->eventManager->triggerEvent(self::EVENT_POST_ACTION, $eventArguments);
+        }
     }
 
     /**
