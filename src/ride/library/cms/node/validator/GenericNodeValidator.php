@@ -48,8 +48,9 @@ class GenericNodeValidator implements NodeValidator {
             return;
         }
 
+        $rootNode = $node->getRootNode();
+        $rootNodeId = $rootNode->getId();
         $nodeId = $node->getId();
-        $rootNodeId = $node->getRootNodeId();
 
         $modelNodes = $nodeModel->getNodes($rootNodeId, $node->getRevision());
 
@@ -64,10 +65,12 @@ class GenericNodeValidator implements NodeValidator {
                 continue;
             }
 
+            $routeLocale = substr($key, $lengthPropertyPrefix);
             $route = $property->getValue();
 
             // normalize route
             $route = trim($route, '/');
+            $baseUrls[$routeLocale] = $rootNode->getBaseUrl($routeLocale);
 
             $tokens = explode('/', $route);
             foreach ($tokens as $index => $token) {
@@ -95,7 +98,11 @@ class GenericNodeValidator implements NodeValidator {
 
                 $modelNodeRoutes = $modelNode->getRoutes();
                 foreach ($modelNodeRoutes as $locale => $modelNodeRoute) {
-                    if ($route != $modelNodeRoute) {
+                    if (!array_key_exists($locale, $baseUrls)) {
+                        $baseUrls[$locale] = $rootNode->getBaseUrl($locale);
+                    }
+
+                    if ($baseUrls[$routeLocale] . $route != $baseUrls[$locale] . $modelNodeRoute) {
                         continue;
                     }
 

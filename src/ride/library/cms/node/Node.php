@@ -632,7 +632,7 @@ class Node {
             $defaultInherit = $inherit;
         }
 
-        if (($value === null || $value === '')) {
+        if ($value === null) {
             if (isset($this->properties[$key])) {
                 // value is set, unset it
                 unset($this->properties[$key]);
