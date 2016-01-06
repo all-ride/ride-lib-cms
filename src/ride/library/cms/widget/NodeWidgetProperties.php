@@ -279,6 +279,64 @@ class NodeWidgetProperties implements WidgetProperties {
     }
 
     /**
+     * Sets the available locales of the widget
+     * @param string|array $locales Array with the code of the locale as value
+     * @return null
+     */
+    public function setAvailableLocales($locales) {
+        if (is_array($locales)) {
+            if (!$locales || in_array(Node::LOCALES_ALL, $locales)) {
+                $locales = Node::LOCALES_ALL;
+            } else {
+                $locales = implode(NodeProperty::LIST_SEPARATOR, $locales);
+            }
+        } elseif (!$locales) {
+            $locales = null;
+        }
+
+        $this->setWidgetProperty(Node::PROPERTY_LOCALES, $locales);
+    }
+
+    /**
+     * Gets the available locales of the widget
+     * @return array|string Array with the code of the locales as key and
+     * value if a subset of the locales is available, the LOCALES_ALL constant
+     * if the widget is available in all locales or if the property is not set.
+     */
+    public function getAvailableLocales() {
+        $availableLocales = $this->getWidgetProperty(Node::PROPERTY_LOCALES);
+
+        if (!$availableLocales || $availableLocales == Node::LOCALES_ALL) {
+            return Node::LOCALES_ALL;
+        }
+
+        $locales = explode(NodeProperty::LIST_SEPARATOR, $availableLocales);
+
+        $availableLocales = array();
+        foreach ($locales as $locale) {
+            $locale = trim($locale);
+
+            $availableLocales[$locale] = $locale;
+        }
+
+        return $availableLocales;
+    }
+
+    /**
+     * Gets whether the widget is available in the provided locale
+     * @param string $locale Code of the locale
+     * @return boolean True if the widget is available in the provided locale, false otherwise
+     */
+    public function isAvailableInLocale($locale) {
+        $locales = $this->getAvailableLocales();
+        if ($locales === null || $locales === Node::LOCALES_ALL || isset($locales[$locale])) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Gets whether the provided user is allowed to view the widget
      * @param ride\library\security\SecurityManager $securityManager
      * @return boolean True if allowed, false otherwise
