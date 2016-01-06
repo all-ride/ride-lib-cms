@@ -67,7 +67,15 @@ class ReferenceNode extends Node {
      * @return string The name of this node
      */
     public function getName($locale = null, $context = null) {
-        $name = parent::getName($locale, $context);
+        $key = self::PROPERTY_NAME;
+        if ($locale) {
+            $key .= '.' . $locale;
+            if ($context) {
+               $key .= '.' . $context;
+            }
+        }
+
+        $name = $this->get($key);
         if ($name) {
             return $name;
         }
