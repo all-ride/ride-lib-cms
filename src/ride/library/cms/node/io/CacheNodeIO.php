@@ -34,11 +34,13 @@ class CacheNodeIO extends AbstractNodeIO {
      * Constructs a new cached NodeIO
      * @param \ride\library\cms\node\io\NodeIO $io NodeIO which needs a cache
      * @param \ride\library\system\file\File $file File for the cache
+     * @param boolean $lock Set to false to disable file locking
      * @return null
      */
-    public function __construct(NodeIO $io, File $file) {
+    public function __construct(NodeIO $io, File $file, $lock = true) {
         $this->io = $io;
-        $this->setFile($file);
+        $this->lock = $lock;
+        $this->setFile($file, $lock);
     }
 
     /**
@@ -71,9 +73,9 @@ class CacheNodeIO extends AbstractNodeIO {
      * @param \ride\library\system\file\File $file File to generate the code in
      * @return null
      */
-    public function setFile(File $file) {
+    public function setFile(File $file, $lock = true) {
         $this->file = $file;
-        $this->file->setLock(true);
+        $this->file->setLock($lock);
     }
 
     /**
