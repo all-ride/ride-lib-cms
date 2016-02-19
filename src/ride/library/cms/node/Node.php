@@ -370,6 +370,14 @@ class Node {
     }
 
     /**
+     * Gets a global id for this node
+     * @return string
+     */
+    public function getGlobalId() {
+        return $this->getRootNodeId() . self::PATH_SEPARATOR . $this->getId();
+    }
+
+    /**
      * Get the id of the root node
      * @return string
      */
@@ -1882,6 +1890,23 @@ class Node {
         }
 
         return $blocks;
+    }
+
+    /**
+     * Parses a global id into a site id and a node id
+     * @param string $globalId Global node id
+     * @param string $siteId Parsed site id
+     * @param string $nodeId Parsed node id
+     * @return boolean True when valid id, false otherwise
+     */
+    public static function parseGlobalId($globalId, &$siteId = null, &$nodeId = null) {
+        if (substr_count($globalId, self::PATH_SEPARATOR) != 1) {
+            return false;
+        }
+
+        list($siteId, $nodeId) = explode(self::PATH_SEPARATOR, $globalId);
+
+        return true;
     }
 
 }
