@@ -1098,7 +1098,7 @@ class Node {
      */
     public function isPublished() {
         $publish = $this->get(self::PROPERTY_PUBLISH, false);
-        if (!Boolean::getBoolean($publish)) {
+        if (!$publish || !Boolean::getBoolean($publish)) {
             return false;
         }
 
