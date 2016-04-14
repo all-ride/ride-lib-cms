@@ -312,7 +312,7 @@ abstract class AbstractNodeIO implements NodeIO {
         }
 
         $baseId = StringHelper::safeString($nodeName);
-        $baseId = str_replace(array('.', '-', ' '), '', $baseId);
+        $baseId = str_replace(array('.', '-', '_', ' '), '', $baseId);
 
         $id = $baseId;
         $index = 1;
