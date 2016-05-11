@@ -237,29 +237,29 @@ class Node {
      */
     protected $revision;
 
-	/**
-	 * The properties of this node
-	 * @var array|NodeProperties
-	 */
-	protected $properties;
+    /**
+     * The properties of this node
+     * @var array|NodeProperties
+     */
+    protected $properties;
 
-	/**
-	 * Array to load the children
-	 * @var array
-	 */
-	protected $children;
+    /**
+     * Array to load the children
+     * @var array
+     */
+    protected $children;
 
-	/**
-	 * Flag for the default inherit value
-	 * @var boolean
-	 */
-	protected $defaultInherit;
+    /**
+     * Flag for the default inherit value
+     * @var boolean
+     */
+    protected $defaultInherit;
 
-	/**
-	 * Widget id for a search result
-	 * @var integer
-	 */
-	private $widgetId;
+    /**
+     * Widget id for a search result
+     * @var integer
+     */
+    private $widgetId;
 
     /**
      * UNIX timestamp of the last change
@@ -267,12 +267,12 @@ class Node {
      */
     protected $dateModified;
 
-	/**
-	 * Constructs a new node
-	 * @param string $type Type of the node
-	 * @return null
-	 */
-	public function __construct($type) {
+    /**
+     * Constructs a new node
+     * @param string $type Type of the node
+     * @return null
+     */
+    public function __construct($type) {
         $this->type = $type;
         $this->id = false;
 
@@ -286,75 +286,75 @@ class Node {
         $this->defaultInherit = false;
 
         $this->widgetId;
-	}
+    }
 
-	/**
-	 * Get a string representation of the node
-	 * @return string
-	 */
-	public function __toString() {
-	    return '[' . $this->type . '::' . $this->getPath() . ']';
-	}
+    /**
+     * Get a string representation of the node
+     * @return string
+     */
+    public function __toString() {
+        return '[' . $this->type . '::' . $this->getPath() . ']';
+    }
 
-	/**
-	 * Gets the type of this node
-	 * @return string
-	 */
-	public function getType() {
-	    return $this->type;
-	}
+    /**
+     * Gets the type of this node
+     * @return string
+     */
+    public function getType() {
+        return $this->type;
+    }
 
-	/**
-	 * Sets the id of this node
-	 * @param string $id
-	 * @return null
-	 */
-	public function setId($id) {
-	    $this->id = $id;
-	}
+    /**
+     * Sets the id of this node
+     * @param string $id
+     * @return null
+     */
+    public function setId($id) {
+        $this->id = $id;
+    }
 
-	/**
-	 * Gets the id of this node
-	 * @return string
-	 */
-	public function getId() {
-	    return $this->id;
-	}
+    /**
+     * Gets the id of this node
+     * @return string
+     */
+    public function getId() {
+        return $this->id;
+    }
 
-	/**
-	 * Sets the materialized path of the parent node
-	 * @param string $parent The materialized path of the parent node
-	 * @param integer $order Index of this node in the list of the children
-	 * @return null
-	 */
-	public function setParent($parent) {
-	    $this->parentPath = $parent;
-	}
+    /**
+     * Sets the materialized path of the parent node
+     * @param string $parent The materialized path of the parent node
+     * @param integer $order Index of this node in the list of the children
+     * @return null
+     */
+    public function setParent($parent) {
+        $this->parentPath = $parent;
+    }
 
-	/**
-	 * Gets the materialized path of the parent node
-	 * @return string
-	 */
-	public function getParent() {
-	    return $this->parentPath;
-	}
+    /**
+     * Gets the materialized path of the parent node
+     * @return string
+     */
+    public function getParent() {
+        return $this->parentPath;
+    }
 
-	/**
-	 * Sets the order index of this node in the list of the parent's children
-	 * @param integer $orderIndex
-	 * @return null
-	 */
-	public function setOrderIndex($orderIndex) {
-	    $this->orderIndex = $orderIndex;
-	}
+    /**
+     * Sets the order index of this node in the list of the parent's children
+     * @param integer $orderIndex
+     * @return null
+     */
+    public function setOrderIndex($orderIndex) {
+        $this->orderIndex = $orderIndex;
+    }
 
-	/**
-	 * Gets the order index of this node in the list of the parent's children
-	 * @return integer
-	 */
-	public function getOrderIndex() {
-	    return $this->orderIndex;
-	}
+    /**
+     * Gets the order index of this node in the list of the parent's children
+     * @return integer
+     */
+    public function getOrderIndex() {
+        return $this->orderIndex;
+    }
 
     /**
      * Get the materialized path of the node. The path is used for the parent
@@ -363,7 +363,7 @@ class Node {
      */
     public function getPath() {
         if (!$this->parentPath) {
-        	return $this->id;
+            return $this->id;
         }
 
         return $this->parentPath . self::PATH_SEPARATOR . $this->id;
@@ -387,7 +387,7 @@ class Node {
         }
 
         if (!$this->parentPath) {
-        	return $this->id;
+            return $this->id;
         }
 
         $tokens = explode(self::PATH_SEPARATOR, $this->parentPath);
@@ -400,13 +400,13 @@ class Node {
      * @return integer
      */
     public function getParentNodeId() {
-    	if (!$this->parentPath) {
+        if (!$this->parentPath) {
             if (!$this->id) {
                 throw new CmsException('Could not get the parent node: this is a new node so it has no parent node');
             }
 
-    		return null;
-    	}
+            return null;
+        }
 
         $ids = explode(self::PATH_SEPARATOR, $this->parentPath);
 
@@ -427,9 +427,9 @@ class Node {
             return false;
         }
 
-    	$ids = explode(self::PATH_SEPARATOR, $this->parentPath);
+        $ids = explode(self::PATH_SEPARATOR, $this->parentPath);
 
-    	return in_array($nodeId, $ids);
+        return in_array($nodeId, $ids);
     }
 
     /**
@@ -437,11 +437,11 @@ class Node {
      * @return integer
      */
     public function getLevel() {
-    	if (!$this->parentPath) {
-    		return 0;
-    	}
+        if (!$this->parentPath) {
+            return 0;
+        }
 
-    	return substr_count($this->parentPath, self::PATH_SEPARATOR) + 1;
+        return substr_count($this->parentPath, self::PATH_SEPARATOR) + 1;
     }
 
     /**
@@ -686,14 +686,14 @@ class Node {
         return $default;
     }
 
-	/**
-	 * Gets a localized property
+    /**
+     * Gets a localized property
      * @param string $locale Code of the locale
-	 * @param string $key Key of the property
-	 * @param mixed $default default value for when the property is not set
- 	 * @return mixed Property value or $default if the property was not set
-	 */
-	public function getLocalized($locale, $key, $default = null) {
+     * @param string $key Key of the property
+     * @param mixed $default default value for when the property is not set
+      * @return mixed Property value or $default if the property was not set
+     */
+    public function getLocalized($locale, $key, $default = null) {
         $this->checkPropertyKey($key);
 
         $properties = $this->getProperties($key, true);
@@ -705,15 +705,15 @@ class Node {
         }
 
         return $default;
-	}
+    }
 
-	/**
-	 * Sets a localized property
+    /**
+     * Sets a localized property
      * @param string $locale Code of the locale
-	 * @param string $key Key of the property
-	 * @param mixed $value Value to set
- 	 * @return
-	 */
+     * @param string $key Key of the property
+     * @param mixed $value Value to set
+      * @return
+     */
     public function setLocalized($locale, $key, $value) {
         $properties = $this->getProperties($key, true);
         if (isset($properties[$key . '.' . $locale])) {
@@ -1356,6 +1356,42 @@ class Node {
     }
 
     /**
+     * Sets the context of the node during dispatch
+     * @param string|array $context Name of the context variable or an array
+     * of key-value pairs for full context
+     * @param mixed $value Context value
+     * @return null
+     */
+    public function setContext($context, $value = null) {
+        if (is_array($context)) {
+            foreach ($context as $key => $value) {
+                $this->setContext($key, $value);
+            }
+        } elseif ($value !== null) {
+            $this->context[$context] = $value;
+        } elseif (isset($this->context[$context])) {
+            unset($this->context[$context]);
+        }
+    }
+
+    /**
+     * Gets the context of the node during dispatch
+     * @param string $name Name of the context variable
+     * @param mixed $default Default value for when the variable is not set
+     * @return mixed Full context if no arguments provided, value of the
+     * variable if set in the context, provided default value otherwise
+     */
+    public function getContext($name = null, $default = null) {
+        if ($name === null) {
+            return $this->context;
+        } elseif (isset($this->context[$name])) {
+            return $this->context[$name];
+        } else {
+            return $default;
+        }
+    }
+
+    /**
      * Sets the widget instance id of the queried widget
      * @return integer
      * @see NodeModel::getNodesForWidget
@@ -1624,19 +1660,19 @@ class Node {
         $this->setSectionWidgets($region, $section, $sectionWidgets);
     }
 
-	/**
-	 * Gets the id of a widget
-	 * @param integer $widgetId Id of the widget instance
-	 * @return string Id of the widget
-	 */
-	public function getWidget($widgetId) {
-	    $widget = $this->get(self::PROPERTY_WIDGET . '.' . $widgetId);
-	    if (!$widget) {
+    /**
+     * Gets the id of a widget
+     * @param integer $widgetId Id of the widget instance
+     * @return string Id of the widget
+     */
+    public function getWidget($widgetId) {
+        $widget = $this->get(self::PROPERTY_WIDGET . '.' . $widgetId);
+        if (!$widget) {
             throw new CmsException('Could not get widget ' . $widgetId . ': widget not found');
         }
 
         return $widget;
-	}
+    }
 
     /**
      * Gets a widget properties for the provided widget
@@ -1682,22 +1718,22 @@ class Node {
         return null;
     }
 
-	/**
+    /**
      * Get the widgets for a section in a region
      * @param string $region Name of the region
      * @param string $section Name of the section
      * @return array Array with the block id as key and as value an array with the
      * widget instance id as key and the widget id as value
-	 */
+     */
     public function getWidgets($region, $section) {
         return $this->getSectionWidgets($this, $region, $section, false);
     }
 
-	/**
+    /**
      * Get the inherited widgets for a region
      * @param string $region Name of the region
      * @return array Array with the widget id as key and value
-	 */
+     */
     public function getInheritedWidgets($region, $section) {
         $widgets = array();
 
@@ -1770,7 +1806,7 @@ class Node {
     public function deleteWidget($region, $section, $block, $widgetId) {
         $sectionWidgets = $this->getSectionWidgets($this, $region, $section, false);
         if (!isset($sectionWidgets[$block][$widgetId])) {
-        	throw new CmsException('Could not delete widget with id ' . $widgetId . ': widget not found');
+            throw new CmsException('Could not delete widget with id ' . $widgetId . ': widget not found');
         }
 
         $properties = $this->getWidgetProperties($widgetId);
@@ -1810,7 +1846,7 @@ class Node {
         return $widgets;
     }
 
-	/**
+    /**
      * Get the widgets for a section in a region for the provided node
      * @param Node $node Node to query
      * @param string $region Name of the region
@@ -1818,12 +1854,12 @@ class Node {
      * @param boolean $inherited Fetch only inherited properties of the node
      * @return array Array with the block id as key and as value an array with the
      * widget instance id as key and the widget id as value
-	 */
+     */
     protected function getSectionWidgets(Node $node, $region, $section, $inherited) {
         // resolve set widgets
         $sectionString = $node->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_WIDGETS, null, true, $inherited);
         if (!$sectionString) {
-        	return array();
+            return array();
         }
 
         // parse widget string
