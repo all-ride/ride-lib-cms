@@ -268,6 +268,12 @@ class Node {
     protected $dateModified;
 
     /**
+     * UNIX timestamp when this node is going to change content
+     * @var integer|null
+     */
+    protected $dateExpires;
+
+    /**
      * Constructs a new node
      * @param string $type Type of the node
      * @return null
@@ -281,6 +287,7 @@ class Node {
         $this->orderIndex = null;
         $this->revision = null;
         $this->dateModified = 0;
+        $this->dateExpires = null;
 
         $this->properties = array();
         $this->defaultInherit = false;
@@ -734,6 +741,51 @@ class Node {
     }
 
     /**
+     * Gets a contextualized property
+     * @param string $key Key of the property
+     * @param string $context Code of the context
+     * @param string $locale Code of the locale
+     * @param mixed $default default value for when the property is not set
+      * @return mixed Property value or $default if the property was not set
+     */
+    protected function getContextualized($key, $context = null, $locale = null, $default = null) {
+        if ($context) {
+            $context = '.' . $context;
+        }
+
+        if ($locale) {
+            // context value for the provided locale
+            $value = $this->get($key . '.' . $locale . $context);
+            if ($value) {
+                return $value;
+            }
+
+            if ($context) {
+                // general value for the provided locale
+                $value = $this->get($key . '.' . $locale);
+                if ($value) {
+                    return $value;
+                }
+            }
+        }
+
+        // context value for any locale
+        foreach ($this->properties as $k => $p) {
+            if ($k == $key . $context || (strpos($k, $key . '.') === 0 && (!$context || strpos($k, $context)))) {
+                return $p->getValue();
+            }
+        }
+
+        if ($context) {
+            // general value for any locale
+            return $this->getContextualized($key);
+        }
+
+        // no value
+        return $default;
+    }
+
+    /**
      * Checks whether a key is a non empty string
      * @param mixed $key Key for a property
      * @return null
@@ -803,40 +855,7 @@ class Node {
      * @return string The name of this node
      */
     public function getName($locale = null, $context = null) {
-        if ($context) {
-            $context = '.' . $context;
-        }
-
-        if ($locale) {
-            // context name for the provided locale
-            $name = $this->get(self::PROPERTY_NAME . '.' . $locale . $context);
-            if ($name) {
-                return $name;
-            }
-
-            if ($context) {
-                // general name for the provided locale
-                $name = $this->get(self::PROPERTY_NAME . '.' . $locale);
-                if ($name) {
-                    return $name;
-                }
-            }
-        }
-
-        // context name for any locale
-        foreach ($this->properties as $key => $property) {
-            if ($key == self::PROPERTY_NAME . $context || (strpos($key, self::PROPERTY_NAME . '.') === 0 && (!$context || strpos($key, $context)))) {
-                return $property->getValue();
-            }
-        }
-
-        if ($context) {
-            // general name for any locale
-            return $this->getName();
-        }
-
-        // no name
-        return null;
+        return $this->getContextualized(self::PROPERTY_NAME, $context, $locale);
     }
 
     /**
@@ -845,8 +864,12 @@ class Node {
      * @param string $description Description of this node
      * @return null
      */
-    public function setDescription($locale, $description) {
-        $this->setLocalized($locale, self::PROPERTY_DESCRIPTION, $description);
+    public function setDescription($locale, $description, $context = null) {
+        if ($context) {
+            $context = '.' . $context;
+        }
+
+        $this->set(self::PROPERTY_DESCRIPTION . '.' . $locale . $context, $description, false);
     }
 
     /**
@@ -854,8 +877,8 @@ class Node {
      * @param string $locale Code of the locale
      * @return string|null Description of this node if set, null otherwise
      */
-    public function getDescription($locale) {
-        return $this->getLocalized($locale, self::PROPERTY_DESCRIPTION);
+    public function getDescription($locale, $context = null) {
+        return $this->getContextualized(self::PROPERTY_DESCRIPTION, $context, $locale);
     }
 
     /**
@@ -1266,7 +1289,7 @@ class Node {
      * @return string|array Value of the property when a name has been
      * provided, all the meta properties in an array otherwise
      */
-    public function getMeta($locale, $name = null, $inherited = true) {
+    public function getMeta($locale, $name = null, $inherited = false) {
         $prefix = self::PROPERTY_META . '.' . $locale . '.';
 
         if ($name) {
@@ -1358,7 +1381,8 @@ class Node {
     /**
      * Sets the context of the node during dispatch
      * @param string|array $context Name of the context variable or an array
-     * of key-value pairs for full context
+     * of key-value pairs for full context. A dotted key will be split in a
+     * hierarchic array
      * @param mixed $value Context value
      * @return null
      */
@@ -1367,16 +1391,43 @@ class Node {
             foreach ($context as $key => $value) {
                 $this->setContext($key, $value);
             }
-        } elseif ($value !== null) {
-            $this->context[$context] = $value;
-        } elseif (isset($this->context[$context])) {
-            unset($this->context[$context]);
+
+            return;
+        }
+
+        $data = &$this->context;
+
+        $tokens = explode('.', $context);
+        $numTokens = count($tokens);
+        for ($index = 0; $index < $numTokens; $index++) {
+            $token = $tokens[$index];
+            if ($index == $numTokens - 1) {
+                $dataKey = $token;
+
+                break;
+            }
+
+            if (isset($data[$token]) && is_array($data[$token])) {
+                $data = &$data[$token];
+            } else {
+                $data[$token] = array();
+                $data = &$data[$token];
+            }
+        }
+
+        if ($value === null) {
+            if (isset($data[$dataKey])) {
+                unset($data[$dataKey]);
+            }
+        } else {
+            $data[$dataKey] = $value;
         }
     }
 
     /**
      * Gets the context of the node during dispatch
-     * @param string $name Name of the context variable
+     * @param string $name Name of the context variable, a dotted key will be
+     * looked up in a hierarchic array
      * @param mixed $default Default value for when the variable is not set
      * @return mixed Full context if no arguments provided, value of the
      * variable if set in the context, provided default value otherwise
@@ -1384,11 +1435,52 @@ class Node {
     public function getContext($name = null, $default = null) {
         if ($name === null) {
             return $this->context;
-        } elseif (isset($this->context[$name])) {
-            return $this->context[$name];
-        } else {
-            return $default;
         }
+
+        $tokens = explode('.', $name);
+        if (count($tokens) === 1) {
+            if (empty($this->context[$name])) {
+                return $default;
+            }
+
+            return $this->context[$name];
+        }
+
+        $result = &$this->context;
+        foreach ($tokens as $token) {
+            if (!isset($result[$token])) {
+                return $default;
+            }
+
+            $result = &$result[$token];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Sets the next time the published state changes
+     * @param integer|null $dateExpires Timestamp of the change or null when no
+     * change is coming
+     * @return null
+     */
+    public function setDateExpires($dateExpires) {
+        if ($dateExpires === null || $dateExpires < time()) {
+            return;
+        }
+
+        if ($this->dateExpires === null || $dateExpires < $this->dateExpires) {
+            $this->dateExpires = $dateExpires;
+        }
+    }
+
+    /**
+     * Gets the next time the published state changes
+     * @return integer|null A timestamp of the change or null when no change is
+     * coming
+     */
+    public function getDateExpires() {
+        return $this->dateExpires;
     }
 
     /**
