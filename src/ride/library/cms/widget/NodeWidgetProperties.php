@@ -253,29 +253,73 @@ class NodeWidgetProperties implements WidgetProperties {
             return false;
         }
 
-        $now = time();
         $publishStart = $this->getWidgetProperty(Node::PROPERTY_PUBLISH_START);
-        $publishStart = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStart);
         $publishStop = $this->getWidgetProperty(Node::PROPERTY_PUBLISH_STOP);
-        $publishStop = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStop);
 
-        if ($publishStart && $publishStop) {
-            if ($publishStart->getTimestamp() <= $now && $now < $publishStop->getTimestamp()) {
-                return true;
-            }
-        } elseif ($publishStart) {
-            if ($publishStart->getTimestamp() <= $now) {
-                return true;
-            }
-        } elseif ($publishStop) {
-            if ($now < $publishStop->getTimestamp()) {
-                return true;
-            }
-        } else {
+        if (!$publishStart && !$publishStop) {
+            return true;
+        }
+
+        $now = time();
+        if ($publishStart) {
+            $publishStart = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStart);
+            $publishStart = $publishStart->getTimestamp();
+        }
+        if ($publishStop) {
+            $publishStop = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStop);
+            $publishStop = $publishStop->getTimestamp();
+        }
+
+        if ($publishStart && $publishStop && $publishStart <= $now && $now < $publishStop) {
+            return true;
+        } elseif ($publishStart && $publishStart <= $now) {
+            return true;
+        } elseif ($publishStop && $now < $publishStop->getTimestamp()) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Gets the next time the published state changes
+     * @return integer|null A timestamp of the change or null when no change is
+     * coming
+     */
+    public function getDateExpires() {
+        $publish = $this->getWidgetProperty(Node::PROPERTY_PUBLISH, true);
+        if (!Boolean::getBoolean($publish)) {
+            return null;
+        }
+
+        $publishStart = $this->getWidgetProperty(Node::PROPERTY_PUBLISH_START);
+        $publishStop = $this->getWidgetProperty(Node::PROPERTY_PUBLISH_STOP);
+
+        if (!$publishStart && !$publishStop) {
+            return null;
+        }
+
+        $now = time();
+
+        if ($publishStart) {
+            $publishStart = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStart);
+            $publishStart = $publishStart->getTimestamp();
+
+            if ($now < $publishStart) {
+                return $publishStart;
+            }
+        }
+
+        if ($publishStop) {
+            $publishStop = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStop);
+            $publishStop = $publishStop->getTimestamp();
+
+            if ($now < $publishStop) {
+                return $publishStop;
+            }
+        }
+
+        return null;
     }
 
     /**

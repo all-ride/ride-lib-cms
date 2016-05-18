@@ -106,15 +106,15 @@ class ReferenceNode extends Node {
      * @param string $locale Code of the locale
      * @return string|null Description of this node if set, null otherwise
      */
-    public function getDescription($locale) {
-        $description = parent::getDescription($locale);
+    public function getDescription($locale, $context = null) {
+        $description = parent::getDescription($locale, $context);
         if ($description) {
             return $description;
         }
 
         $node = $this->getNode();
         if ($node) {
-            return $node->getDescription($locale);
+            return $node->getDescription($locale, $context);
         }
     }
 
