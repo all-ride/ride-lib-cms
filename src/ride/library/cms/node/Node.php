@@ -274,6 +274,12 @@ class Node {
     protected $dateExpires;
 
     /**
+     * array with context variables
+     * @var array()
+     */
+    protected $context;
+
+    /**
      * Constructs a new node
      * @param string $type Type of the node
      * @return null
@@ -293,6 +299,7 @@ class Node {
         $this->defaultInherit = false;
 
         $this->widgetId;
+        $this->context = array();
     }
 
     /**
