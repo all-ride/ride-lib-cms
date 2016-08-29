@@ -263,7 +263,7 @@ class NodeModel {
                 $siteRevision = $site->getRevision();
             }
 
-            $result += $this->getSiteNodesForWidget($site->getId(), $siteRevision, $widget, $locale);
+            $result = array_merge($result, $this->getSiteNodesForWidget($site->getId(), $siteRevision, $widget, $locale));
         }
 
         return $result;
