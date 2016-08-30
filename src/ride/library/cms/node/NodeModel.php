@@ -997,11 +997,18 @@ class NodeModel {
 
     /**
      * Cleans up all properties and widget instances of unused widgets
-     * @return null
+     * @param boolean $save Set to true to actually perform the clean up instead
+     * of just returning what would be cleaned
+     * @return array Array with the site id as key and an array with the node id
+     * as key and as value an array with the unused properties
      */
-    public function cleanUp() {
+    public function cleanUp($save = false) {
+        $removedKeys = array();
+
         $sites = $this->getSites();
         foreach ($sites as $siteId => $site) {
+            $removedKeys[$siteId] = array();
+
             $revisions = $site->getRevisions();
             foreach ($revisions as $revision) {
                 $usedWidgets = $site->getAvailableWidgets();
@@ -1009,46 +1016,56 @@ class NodeModel {
                 $nodes = $this->getNodesByPath($siteId, $revision, $siteId);
 
                 // detect unused widgets
-                $this->checkWidgetUsage($site->getProperties(), $usedWidgets);
+                $usedWidgets = $this->checkWidgetUsage($site, $usedWidgets);
                 foreach ($nodes as $node) {
-                    $this->checkWidgetUsage($node->getProperties(), $usedWidgets);
+                    $usedWidgets = $this->checkWidgetUsage($node, $usedWidgets);
                 }
 
                 // clear unused widget properties
-                foreach ($nodes as $node) {
-                    if ($this->clearWidgetUsage($node, $usedWidgets)) {
-                        $this->setNode($node, 'Cleaned up ' . $node->getName(), false);
+                foreach ($nodes as $nodeId => $node) {
+                    $nodeRemovedKeys = $this->clearWidgetUsage($node, $usedWidgets);
+                    if ($nodeRemovedKeys) {
+                        $removedKeys[$siteId][$nodeId] = $nodeRemovedKeys;
+
+                        if ($save) {
+                            $this->setNode($node, 'Cleaned up ' . $node->getName(), false);
+                        }
                     }
                 }
 
-                if ($this->clearWidgetUsage($site, $usedWidgets)) {
-                    $this->setNode($site, 'Cleaned up ' . $site->getName(), false);
+                $siteRemovedKeys = $this->clearWidgetUsage($site, $usedWidgets);
+                if ($siteRemovedKeys) {
+                    $removedKeys[$siteId][$siteId] = $siteRemovedKeys;
+
+                    if ($save) {
+                        $this->setNode($site, 'Cleaned up ' . $site->getName(), false);
+                    }
                 }
             }
         }
+
+        return $removedKeys;
     }
 
     /**
      * Checks the usage of the widgets
-     * @param array $properties Array with a NodeProperty as value and the
+     * @param Node $node Node to check
      * property name as key
      * @param array $usedWidgets Array with the widget instance id as key and
      * the widget id/name as value
-     * @return null
+     * @return array Provided $usedWidgets with the widgets of the provided node
+     * filtered out
      */
-    protected function checkWidgetUsage(array $properties, array &$usedWidgets) {
-        foreach ($properties as $key => $property) {
-            if (strpos($key, Node::PROPERTY_WIDGETS . '.') !== 0 || substr_count($key, '.') !== 1) {
-                continue;
-            }
+    protected function checkWidgetUsage(Node $node, array $usedWidgets) {
+        $nodeUsedWidgets = $node->getUsedWidgets();
 
-            $widgetIds = explode(',', $property->getValue());
-            foreach ($widgetIds as $widgetId) {
-                if (isset($usedWidgets[$widgetId])) {
-                    unset($usedWidgets[$widgetId]);
-                }
+        foreach ($nodeUsedWidgets as $widgetId) {
+            if (isset($usedWidgets[$widgetId])) {
+                unset($usedWidgets[$widgetId]);
             }
         }
+
+        return $usedWidgets;
     }
 
     /**
@@ -1056,10 +1073,10 @@ class NodeModel {
      * provided widgets
      * @param \ride\library\cms\node\Node $node
      * @param array $unusedWidgetd Array with the widget instance id as key
-     * @return boolean Flag to see if the node has changed
+     * @return array Array with the removed properties
      */
     protected function clearWidgetUsage(Node $node, array $unusedWidgets) {
-        $isChanged = false;
+        $removedKeys = array();
 
         $isRootNode = $node->getParent() ? false : true;
         $properties = $node->getProperties();
@@ -1069,12 +1086,12 @@ class NodeModel {
                 if (strpos($key, Node::PROPERTY_WIDGET . '.' . $widgetId . '.') === 0 || ($isRootNode && $key === Node::PROPERTY_WIDGET . '.' . $widgetId)) {
                     $node->set($key, null);
 
-                    $isChanged = true;
+                    $removedKeys[$key] = $property->getValue();
                 }
             }
         }
 
-        return $isChanged;
+        return $removedKeys;
     }
 
 }
