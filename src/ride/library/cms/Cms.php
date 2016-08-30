@@ -66,6 +66,14 @@ class Cms {
     }
 
     /**
+     * Gets the instance of the security manager
+     * @return \ride\library\security\SecurityManager
+     */
+    public function getSecurityManager() {
+        return $this->securityManager;
+    }
+
+    /**
      * Gets the name of the default revision
      * @return string
      */
