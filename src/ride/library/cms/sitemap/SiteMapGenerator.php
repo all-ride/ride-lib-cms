@@ -18,8 +18,21 @@ class SiteMapGenerator {
     /**
      * Flag in the node properties to tell if the node should be taken into the
      * sitemap
+     * @var string
      */
     const PROPERTY_SITEMAP = 'sitemap';
+
+    /**
+     * Value in the node properties for the priority of the URL
+     * @var string
+     */
+    const PROPERTY_SITEMAP_PRIORITY = 'sitemap.priority';
+
+    /**
+     * Value in the node properties for the change frequency of an URL
+     * @var string
+     */
+    const PROPERTY_SITEMAP_FREQUENCY = 'sitemap.frequency';
 
     /**
      * Constructs a new site map generator
@@ -181,20 +194,22 @@ class SiteMapGenerator {
      */
     private function processUrls(array $urls) {
         $hosts = array();
+        $ignore = array();
 
         foreach ($urls as $url => $siteMapUrl) {
-            if (substr($url, 0, 1) === '!') {
-                unset($urls[$url]);
-
-                $url = substr($url, 1);
-                if (isset($urls[$url])) {
-                    unset($urls[$url]);
-                }
-
+            if (substr($url, 0, 1) !== '!') {
                 continue;
             }
 
-            if (!$siteMapUrl instanceof SiteMapUrl) {
+            $ignore[substr($url, 1)] = true;
+
+            unset($urls[$url]);
+        }
+
+        foreach ($urls as $url => $siteMapUrl) {
+            if (isset($ignore[$url])) {
+                continue;
+            } elseif (!$siteMapUrl instanceof SiteMapUrl) {
                 throw new CmsException('Could not process site map URL: value for ' . $url . ' is not a ride\\library\\cms\\sitemap\\SiteMapUrl instance');
             }
 
