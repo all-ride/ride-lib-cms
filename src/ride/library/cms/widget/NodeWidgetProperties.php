@@ -386,8 +386,8 @@ class NodeWidgetProperties implements WidgetProperties {
      * or a comma separated list of permissions otherwise
      */
     public function getSecurity() {
-        $security = $this->getWidgetProperty(self::PROPERTY_SECURITY, self::AUTHENTICATION_STATUS_EVERYBODY);
-        if (!$security || $security === self::AUTHENTICATION_STATUS_EVERYBODY) {
+        $security = $this->getWidgetProperty(Node::PROPERTY_SECURITY, Node::AUTHENTICATION_STATUS_EVERYBODY);
+        if (!$security || $security === Node::AUTHENTICATION_STATUS_EVERYBODY) {
             return false;
         }
 
