@@ -1214,13 +1214,27 @@ class Node {
     }
 
     /**
+     * Gets whether this node is secured
+     * @return boolean|string False when no security, an authentication constant
+     * or a comma separated list of permissions otherwise
+     */
+    public function getSecurity() {
+        $security = $this->get(self::PROPERTY_SECURITY, self::AUTHENTICATION_STATUS_EVERYBODY);
+        if (!$security || $security === self::AUTHENTICATION_STATUS_EVERYBODY) {
+            return false;
+        }
+
+        return $security;
+    }
+
+    /**
      * Gets whether the provided user is allowed to view this node
      * @param ride\library\security\SecurityManager $securityManager
      * @return boolean True if allowed, false otherwise
      */
     public function isAllowed(SecurityManager $securityManager) {
-        $security = $this->get(self::PROPERTY_SECURITY, self::AUTHENTICATION_STATUS_EVERYBODY);
-        if (!$security || $security === self::AUTHENTICATION_STATUS_EVERYBODY) {
+        $security = $this->getSecurity();
+        if (!$security) {
             return true;
         }
 

@@ -381,13 +381,27 @@ class NodeWidgetProperties implements WidgetProperties {
     }
 
     /**
+     * Gets whether this widget is secured
+     * @return boolean|string False when no security, an authentication constant
+     * or a comma separated list of permissions otherwise
+     */
+    public function getSecurity() {
+        $security = $this->getWidgetProperty(self::PROPERTY_SECURITY, self::AUTHENTICATION_STATUS_EVERYBODY);
+        if (!$security || $security === self::AUTHENTICATION_STATUS_EVERYBODY) {
+            return false;
+        }
+
+        return $security;
+    }
+
+    /**
      * Gets whether the provided user is allowed to view the widget
      * @param ride\library\security\SecurityManager $securityManager
      * @return boolean True if allowed, false otherwise
      */
     public function isAllowed(SecurityManager $securityManager) {
-        $security = $this->getWidgetProperty(Node::PROPERTY_SECURITY, Node::AUTHENTICATION_STATUS_EVERYBODY);
-        if (!$security || $security === Node::AUTHENTICATION_STATUS_EVERYBODY) {
+        $security = $this->getSecurity();
+        if (!$security) {
             return true;
         }
 
