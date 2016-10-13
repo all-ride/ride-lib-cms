@@ -93,6 +93,7 @@ class GenericNodeValidator implements NodeValidator {
                 $modelNodeId = $modelNode->getId();
                 if ($modelNodeId == $nodeId || $modelNode->getRootNodeId() != $rootNodeId || !$modelNode->hasParent() || $modelNode->getType() == ReferenceNodeType::NAME) {
                     // same node, different site or root node or a reference node
+
                     continue;
                 }
 
