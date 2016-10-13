@@ -2,7 +2,6 @@
     "name": "ride/lib-cms",
     "description": "CMS library of the Ride framework",
     "license": "MIT",
-    "version": "0.31.1",
     "authors": [
         {
             "name": "Joris Vandeweerd",
@@ -10,14 +9,14 @@
         }
     ],
     "require": {
-        "ride/lib-cache": ">=0.3.0",
-        "ride/lib-common": ">=0.4.0",
-        "ride/lib-config": ">=0.2.3",
-        "ride/lib-reflection": ">=0.4.0",
-        "ride/lib-template": ">=0.4.0",
-        "ride/lib-security": ">=0.4.0",
-        "ride/lib-system": ">=0.5.1",
-        "ride/lib-widget": ">=0.3.0",
+        "ride/lib-cache": "^1.0.0",
+        "ride/lib-common": "^1.0.0",
+        "ride/lib-config": "^1.0.0",
+        "ride/lib-reflection": "^1.0.0",
+        "ride/lib-template": "^1.0.0",
+        "ride/lib-security": "^1.0.0",
+        "ride/lib-system": "^1.0.0",
+        "ride/lib-widget": "^1.0.0",
         "shark/simple_html_dom": "*"
     },
     "autoload": {
