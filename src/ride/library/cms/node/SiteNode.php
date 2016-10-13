@@ -167,6 +167,49 @@ class SiteNode extends Node {
     }
 
     /**
+     * Gets a proposal to prefix the route for a new node with
+     * @param array $locales Array with the available locale code as key
+     * @param string $locale Locale code
+     * @return string Route prefix proposal
+     */
+    public function getRoutePrefixProposal(array $locales, $locale) {
+        if (count($locales) == 1) {
+            return '';
+        }
+
+        $countBaseUrls = array();
+        $localeBaseUrls = array();
+
+        $properties = $this->getProperties(self::PROPERTY_BASE_URL);
+
+        foreach ($properties as $key => $property) {
+            $baseUrl = $property->getValue();
+
+
+            if (isset($baseUrls[$baseUrl])) {
+                $countBaseUrls[$baseUrl]++;
+            } else {
+                $countBaseUrls[$baseUrl] = 1;
+            }
+
+            if ($key !== self::PROPERTY_BASE_URL) {
+                $localeBaseUrls[str_replace(self::PROPERTY_BASE_URL . '.', '', $key)] = $baseUrl;
+            }
+        }
+
+        if (isset($localeBaseUrls[$locale]) && $countBaseUrls[$localeBaseUrls[$locale]] == 1) {
+            return '';
+        }
+
+        if (isset($countBaseUrls[$locale]) && $countBaseUrls[$locale] > 1) {
+            $locale = explode('_', $locale);
+            $locale = $locale[0];
+        }
+
+        return '/' . $locale;
+    }
+
+    /**
      * Sets a property
      * @param NodeProperty $property
      * @return null

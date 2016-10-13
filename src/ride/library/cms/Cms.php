@@ -193,6 +193,17 @@ class Cms {
     }
 
     /**
+     * Validates a node
+     * @param \ride\library\cms\node\Node $node The node to validate
+     * @return null
+     * @throws \ride\library\validation\exception\ValidationException when the
+     * node is invalid
+     */
+    public function validateNode(Node $node) {
+        $this->nodeModel->validateNode($node);
+    }
+
+    /**
      * Saves a node to the data store
      * @param \ride\library\cms\node\Node $node Node to save
      * @param string $description Description for the save action
