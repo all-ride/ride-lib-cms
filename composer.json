@@ -17,7 +17,7 @@
         "ride/lib-security": "^1.0.0",
         "ride/lib-system": "^1.0.0",
         "ride/lib-widget": "^1.0.0",
-        "shark/simple_html_dom": "*"
+        "aszone/simple_html_dom": "^1.5"
     },
     "autoload": {
         "psr-0": {
