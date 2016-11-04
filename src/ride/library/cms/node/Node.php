@@ -908,6 +908,15 @@ class Node {
     }
 
     /**
+     * Checks if this node is the home page
+     * @param string $locale Code of the locale
+     * @return boolean
+     */
+    public function isHomepage($locale) {
+        return $this->getRoute($locale) === '/';
+    }
+
+    /**
      * Sets the route of this node for the provided locale
      * @param string $locale The code of the locale
      * @param string $route The route of this node
