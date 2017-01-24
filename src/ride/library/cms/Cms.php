@@ -257,7 +257,18 @@ class Cms {
     }
 
     /**
-     * Gets the ndoes of the trash
+     * Gets the homepage for the provided site
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
+     * @param string $locale Locale to get the homepage from
+     * @return Node|null instance of the homepage node or null when not found
+     */
+    public function getHomeNode($site, $revision, $locale) {
+        return $this->nodeModel->getHomeNode($site, $revision, $locale);
+    }
+
+    /**
+     * Gets the nodes of the trash
      * @param string $siteId Id of the site
      * @return array Array with TrashNode instances
      */

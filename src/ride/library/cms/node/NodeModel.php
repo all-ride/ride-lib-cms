@@ -270,6 +270,29 @@ class NodeModel {
     }
 
     /**
+     * Gets the homepage for the provided site
+     * @param string $siteId Id of the site
+     * @param string $revision Name of the revision
+     * @param string $locale Locale to get the homepage from
+     * @return Node|null instance of the homepage node or null when not found
+     */
+    public function getHomeNode($siteId, $revision, $locale) {
+        $site = $this->getNode($siteId, $revision, $siteId);
+        if (!$site || !$site->isAvailableInLocale($locale)) {
+            return null;
+        }
+
+        $nodes = $this->getNodes($siteId, $revision);
+        foreach ($nodes as $node) {
+            if ($node->isHomepage($locale)) {
+                return $node;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets all the nodes which contain a certain widget
      * @param string $siteId Id of the site
      * @param string Name of the revision
