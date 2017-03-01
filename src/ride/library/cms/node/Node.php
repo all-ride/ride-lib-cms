@@ -1560,11 +1560,12 @@ class Node {
      * @param string $region Name of the region
      * @param string $layout Name of the layout
      * @param string $name Name for the section
+     * @param boolean $prepend Set to true to prepend the section
      * @return string Name of the new section
      * @throws \ride\library\cms\exception\CmsException when the provided
      * section already exists
      */
-    public function addSection($region, $layout, $name = null) {
+    public function addSection($region, $layout, $name = null, $prepend = false) {
         $sections = $this->getSections($region);
         if ($name !== null && isset($sections[$name])) {
             throw new CmsException('Could not add section: ' . $name . ' already exists, use setSectionLayout to change the layout.');
@@ -1577,7 +1578,11 @@ class Node {
             }
         }
 
-        $sections[$name] = $layout;
+        if ($prepend) {
+            $sections = array($name => $layout) + $sections;
+        } else {
+            $sections[$name] = $layout;
+        }
 
         $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $name . '.layout', $layout);
         $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, implode(NodeProperty::LIST_SEPARATOR, array_keys($sections)));

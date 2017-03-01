@@ -1,3 +1,7 @@
+## [1.3.0] - 2017-03-01
+### Added
+- Added pepend argument for addSection
+
 ## [1.2.0] - 2017-01-24
 ### Added
 - Added method getHomeNode to get the home page of a site
