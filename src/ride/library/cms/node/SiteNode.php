@@ -108,15 +108,6 @@ class SiteNode extends Node {
     }
 
     /**
-     * Checks if this node is the home page
-     * @param string $locale Code of the locale
-     * @return boolean
-     */
-    public function isHomepage($locale) {
-        return false;
-    }
-
-    /**
      * Sets the base URL for the provided locale
      * @param string $locale Code of the locale
      * @param string $url Base URL for this site
@@ -342,6 +333,15 @@ class SiteNode extends Node {
      */
     public function getRoute($locale, $returnDefault = true) {
         return '/';
+    }
+
+    /**
+     * Checks if this node is the homepage for the provided locale
+     * @param string $locale Code of the locale
+     * @return boolean
+     */
+    public function isHomepage($locale) {
+        return false;
     }
 
 }
