@@ -1,3 +1,7 @@
+## [1.4.0] - 2017-03-23
+### Added
+- Added HomeNodeType to create dynamic home pages
+
 ## [1.3.0] - 2017-03-01
 ### Added
 - Added pepend argument for addSection

@@ -18,6 +18,21 @@ use \DateTime;
 class GenericNodeValidator implements NodeValidator {
 
     /**
+     * Array with the locale codes as key
+     * @var array
+     */
+    protected $locales = array();
+
+    /**
+     * Sets the available locales of the system
+     * @param array $locales Array with the locale codes as key
+     * @return null
+     */
+    public function setLocales(array $locales) {
+        $this->locales = $locales;
+    }
+
+    /**
      * Validates the node properties
      * @param \ride\library\cms\node\Node $node Node to be validated
      * @param \ride\library\cms\node\NodeModel $nodeModel Model of the nodes
@@ -29,10 +44,44 @@ class GenericNodeValidator implements NodeValidator {
         $exception = new ValidationException();
 
         $this->validateRoute($node, $nodeModel, $exception);
+        $this->validateHome($node, $nodeModel, $exception);
         $this->validatePublicationDate($node, $exception);
 
         if ($exception->hasErrors()) {
             throw $exception;
+        }
+    }
+
+    /**
+     * Validates the homepage state of the node
+     * @param \ride\library\cms\node\Node $node Node to be validated
+     * @param \ride\library\cms\node\NodeModel $nodeModel Model of the nodes
+     * @param \ride\library\validation\exception\ValidationException $exception
+     * @return null
+     */
+    protected function validateHome(Node $node, NodeModel $nodeModel, ValidationException $exception) {
+        foreach ($this->locales as $locale => $null) {
+            if (!$node->isHomepage($locale)) {
+                continue;
+            }
+
+            $home = $nodeModel->getHomeNode($node->getRootNodeId(), $node->getRevision(), $locale);
+            if (!$home || $home->getId() === $node->getId()) {
+                continue;
+            }
+
+            $error = new ValidationError(
+                'error.validation.home.exists',
+                '%home% is already set as homepage',
+                array(
+                    'home' => $home->getId(),
+                    'locale' => $locale,
+                )
+            );
+
+            $exception->addErrors(Node::PROPERTY_ROUTE, array($error));
+
+            break;
         }
     }
 
