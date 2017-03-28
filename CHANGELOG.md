@@ -1,3 +1,7 @@
+## [1.4.1] - 2017-03-28
+### Updated
+- Fixed saving of multiple time based homepages
+
 ## [1.4.0] - 2017-03-23
 ### Added
 - Added HomeNodeType to create dynamic home pages

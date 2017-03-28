@@ -117,14 +117,14 @@ class HomeNode extends Node {
         }
 
         // set properties for the provided homepages
-        $index = 0;
+        $index = 1;
         $homePages = array_values($homePages);
         foreach ($homePages as $homePage) {
             if (!$homePage instanceof HomePage) {
                 throw new CmsException('Could not set the homepages: non HomePage instance found on index ' . $index);
             }
 
-            $id = $index + 1;
+            $id = $index;
             $homePagePrefix = $prefix . $id . '.';
 
             $this->set($homePagePrefix . self::PROPERTY_HOME_NODE, $homePage->getNodeId());
@@ -134,6 +134,8 @@ class HomeNode extends Node {
             if ($homePage->getDateStop()) {
                 $this->set($homePagePrefix . self::PROPERTY_HOME_STOP, date(NodeProperty::DATE_FORMAT, $homePage->getDateStop()));
             }
+
+            $index++;
         }
     }
 
