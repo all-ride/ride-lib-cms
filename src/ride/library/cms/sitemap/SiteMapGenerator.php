@@ -5,6 +5,7 @@ namespace ride\library\cms\sitemap;
 use ride\library\cms\exception\CmsException;
 use ride\library\cms\node\Node;
 use ride\library\cms\node\SiteNode;
+use ride\library\cms\widget\Widget;
 use ride\library\cms\Cms;
 use ride\library\reflection\Boolean;
 use ride\library\system\file\File;
@@ -161,7 +162,13 @@ class SiteMapGenerator {
 
                             $widget = clone $widget;
                             $widget->setIdentifier($widgetInstanceId);
+                            $widget->setLocale($locale);
+                            $widget->setRegion($region);
+                            $widget->setSection($section);
+                            $widget->setBlock($blockId);
                             $widget->setProperties($widgetProperties);
+
+                            $this->prepareWidget($widget);
 
                             if (!$widgetProperties->isPublished() || !$widgetProperties->isAvailableInLocale($locale) || !$widgetProperties->isAllowed($this->cms->getSecurityManager())) {
                                 continue;
@@ -182,6 +189,15 @@ class SiteMapGenerator {
         }
 
         return $urls;
+    }
+
+    /**
+     * Hook to perform extra processing on a widget
+     * @param \ride\library\cms\widget\Widget $widget
+     * @return null
+     */
+    protected function prepareWidget(Widget $widget) {
+
     }
 
     /**
