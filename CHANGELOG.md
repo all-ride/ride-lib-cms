@@ -1,3 +1,8 @@
+## [1.5.0] - 2017-04-04
+### Added
+- node property for the grid breakpoint of a section
+- added hook to SiteMapGenerator for extra initializing of a widget
+
 ## [1.4.1] - 2017-03-28
 ### Updated
 - Fixed saving of multiple time based homepages

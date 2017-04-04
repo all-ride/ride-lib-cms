@@ -100,6 +100,12 @@ class Node {
     const PROPERTY_FULL_WIDTH = 'full.width';
 
     /**
+     * Property key for the grid breakpoint name
+     * @var string
+     */
+    const PROPERTY_GRID_BREAKPOINT = 'breakpoint';
+
+    /**
      * Property key for the image
      * @var string
      */
@@ -1691,11 +1697,33 @@ class Node {
      * Gets whether the section uses the full width
      * @param string $region Name of the region
      * @param string $section Name of the section
-     * @param string $default Default value for when no title set
+     * @param string $default Default value for when no flag set
      * @return string Whether the section uses full width
      */
     public function isSectionFullWidth($region, $section, $default = null) {
         return $this->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_FULL_WIDTH, $default);
+    }
+
+    /**
+     * Sets the grid breakpoint of the section layout
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $gridBreakpoint Name of the breakpoint
+     * @return null
+     */
+    public function setSectionGridBreakpoint($region, $section, $gridBreakpoint) {
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_GRID_BREAKPOINT, $gridBreakpoint);
+    }
+
+    /**
+     * Gets the grid breakpoint of a section
+     * @param string $region Name of the region
+     * @param string $section Name of the section
+     * @param string $default Default value for when no breakpoint set
+     * @return string
+     */
+    public function getSectionGridBreakpoint($region, $section, $default = null) {
+        return $this->get(self::PROPERTY_REGION . '.' . $region . '.' . $section . '.' . self::PROPERTY_GRID_BREAKPOINT, $default);
     }
 
     /**
