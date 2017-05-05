@@ -1,3 +1,7 @@
+## [1.5.1] - 2017-05-05
+### Updated
+- fixed widget visibility when published from and till is set
+
 ## [1.5.0] - 2017-04-04
 ### Added
 - node property for the grid breakpoint of a section
