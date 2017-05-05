@@ -270,8 +270,10 @@ class NodeWidgetProperties implements WidgetProperties {
             $publishStop = $publishStop->getTimestamp();
         }
 
-        if ($publishStart && $publishStop && $publishStart <= $now && $now < $publishStop) {
-            return true;
+        if ($publishStart && $publishStop) {
+            if ($publishStart <= $now && $now < $publishStop) {
+                return true;
+            }
         } elseif ($publishStart && $publishStart <= $now) {
             return true;
         } elseif ($publishStop && $now < $publishStop) {
