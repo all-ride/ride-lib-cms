@@ -1,3 +1,7 @@
+## [1.5.2] - 2017-05-09
+### Updated
+- localized homepages url's
+
 ## [1.5.1] - 2017-05-05
 ### Updated
 - fixed widget visibility when published from and till is set
