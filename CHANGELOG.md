@@ -1,3 +1,7 @@
+## [1.5.3] - 2017-05-18
+### Updated
+- support tel: when resolving relative URL's
+
 ## [1.5.2] - 2017-05-09
 ### Updated
 - localized homepages url's
