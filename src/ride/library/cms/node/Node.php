@@ -1954,11 +1954,24 @@ class Node {
             return;
         }
 
-        if (isset($sectionWidgets[$block])) {
-            $sectionWidgets[$block][$widgetId] = $widgetId;
-        } else {
-            $sectionWidgets[$block] = array($widgetId => $widgetId);
+        $newSectionWidgets = array();
+        for ($i = 1; $i <= $block; $i++) {
+            if (array_key_exists($i, $sectionWidgets)) {
+                $newSectionWidgets[$i] = $sectionWidgets[$i];
+            } else {
+                $newSectionWidgets[$i] = array();
+            }
         }
+        foreach ($sectionWidgets as $sectionBlock => $sectionWidgets) {
+            if ($sectionBlock <= $block) {
+                continue;
+            }
+
+            $newSectionWidgets[$sectionBlock] = $sectionWidgets;
+        }
+
+        $sectionWidgets = $newSectionWidgets;
+        $sectionWidgets[$block][$widgetId] = $widgetId;
 
         $this->setSectionWidgets($region, $section, $sectionWidgets);
     }

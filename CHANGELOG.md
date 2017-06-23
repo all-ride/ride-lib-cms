@@ -1,3 +1,7 @@
+## [1.6.1] - 2017-06-23
+### Updated
+- fixed adding widget in second block (or third, ...) of newly created section would place widget in first block
+
 ## [1.6.0] - 2017-06-23
 ### Added
 - added an option to disable the INI archive
