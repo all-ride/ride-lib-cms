@@ -1555,7 +1555,7 @@ class Node {
         $sections = array();
 
         $sectionsProperty = $this->get(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS);
-        if ($sectionsProperty === null) {
+        if ($sectionsProperty === null || $sectionsProperty === '') {
             return $sections;
         }
 
@@ -1618,7 +1618,12 @@ class Node {
 
         // remove from sections definition
         unset($sections[$section]);
-        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, implode(NodeProperty::LIST_SEPARATOR, array_keys($sections)));
+        if ($sections) {
+            $sections = implode(NodeProperty::LIST_SEPARATOR, array_keys($sections));
+        } else {
+            $sections = '';
+        }
+        $this->set(self::PROPERTY_REGION . '.' . $region . '.' . self::PROPERTY_SECTIONS, $sections);
 
         // remove actual section definition
         $prefix = self::PROPERTY_REGION . '.' . $region . '.' . $section . '.';

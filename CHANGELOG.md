@@ -1,3 +1,7 @@
+## [1.5.4] - 2017-06-23
+### Updated
+- fixed removal of all sections on a node
+
 ## [1.5.3] - 2017-05-18
 ### Updated
 - support tel: when resolving relative URL's
