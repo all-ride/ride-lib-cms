@@ -1,3 +1,7 @@
+## [1.6.0] - 2017-06-23
+### Added
+- added an option to disable the INI archive
+
 ## [1.5.4] - 2017-06-23
 ### Updated
 - fixed removal of all sections on a node

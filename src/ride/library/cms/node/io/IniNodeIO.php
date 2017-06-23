@@ -28,6 +28,12 @@ class IniNodeIO extends AbstractFileNodeIO {
     protected $configHelper;
 
     /**
+     * Flag to see if an archive should be kept
+     * @var boolean
+     */
+    protected $keepArchive;
+
+    /**
      * Constructs a new ini node IO
      * @param \ride\library\system\file\File $path Path for the data files
      * @param \ride\library\config\ConfigHelper $configHelper Instance of the
@@ -43,6 +49,17 @@ class IniNodeIO extends AbstractFileNodeIO {
 
         $this->archiveName = '_archive';
         $this->trashName = '_trash';
+
+        $this->keepArchive = true;
+    }
+
+    /**
+     * Sets whether an archive should be kept of the history
+     * @param boolean $keepArchive
+     * @return null
+     */
+    public function setKeepArchive($keepArchive) {
+        $this->keepArchive = $keepArchive;
     }
 
     /**
@@ -417,8 +434,10 @@ class IniNodeIO extends AbstractFileNodeIO {
         }
 
         // publish revision exists, archive the revision before publishing
-        $archiveDirectory = $this->path->getChild($siteId . '/' . $this->archiveName . '/' . date('YmdHis'));
-        $publishDirectory->copy($archiveDirectory);
+        if ($this->keepArchive) {
+            $archiveDirectory = $this->path->getChild($siteId . '/' . $this->archiveName . '/' . date('YmdHis'));
+            $publishDirectory->copy($archiveDirectory);
+        }
 
         // publish node
         $deletedNode = $this->publishNode($site, $node, $revision, $publishDirectory, false);
