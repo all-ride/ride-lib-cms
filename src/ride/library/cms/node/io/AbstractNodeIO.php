@@ -307,12 +307,13 @@ abstract class AbstractNodeIO implements NodeIO {
     protected function getNewNodeId(Node $node) {
         $revision = $node->getRevision();
         $nodeName = $node->getName();
-        if (!$nodeName) {
-            $nodeName = 'node';
-        }
 
         $baseId = StringHelper::safeString($nodeName);
         $baseId = str_replace(array('.', '-', '_', ' '), '', $baseId);
+
+        if (!$baseId) {
+            $baseId = 'node';
+        }
 
         $id = $baseId;
         $index = 1;
