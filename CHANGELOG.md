@@ -1,3 +1,7 @@
+## [1.6.2] - 2018-10-19
+### Updated
+- fixed node id generation of nodes with only special characters
+
 ## [1.6.1] - 2017-06-23
 ### Updated
 - fixed adding widget in second block (or third, ...) of newly created section would place widget in first block
