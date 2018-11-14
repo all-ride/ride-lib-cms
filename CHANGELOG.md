@@ -1,3 +1,7 @@
+## [1.6.3] - 2018-11-15
+### Updated
+- force node orderIndex as integer
+
 ## [1.6.2] - 2018-10-19
 ### Updated
 - fixed node id generation of nodes with only special characters
