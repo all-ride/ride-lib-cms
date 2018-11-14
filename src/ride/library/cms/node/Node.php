@@ -373,7 +373,7 @@ class Node {
      * @return integer
      */
     public function getOrderIndex() {
-        return $this->orderIndex;
+        return (integer) $this->orderIndex;
     }
 
     /**
