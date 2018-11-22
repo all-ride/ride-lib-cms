@@ -185,15 +185,18 @@ abstract class AbstractNodeIO implements NodeIO {
                 continue;
             }
 
-            $orderIndex = $child->getOrderIndex();
-            if ($orderIndex) {
-                $order[$orderIndex] = $child;
-            } else {
-                $order['o' . count($order)] = $child;
-            }
+            $order[] = $child;
         }
 
-        ksort($order);
+        usort($order, function($node1, $node2) {
+            if ($node1->getOrderIndex() < $node2->getOrderIndex()) {
+                return -1;
+            } elseif ($node1->getOrderIndex() > $node2->getOrderIndex()) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
 
         if ($depth !== false) {
             $depth--;
