@@ -1,3 +1,7 @@
+## [1.6.4] - 2018-11-22
+### Updated
+- improved node order implementation to keep nodes with the same order
+
 ## [1.6.3] - 2018-11-15
 ### Updated
 - force node orderIndex as integer
