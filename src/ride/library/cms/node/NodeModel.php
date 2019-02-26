@@ -589,7 +589,7 @@ class NodeModel {
 
         // perform auto publishing if enabled
         if (!$isRootNode && $autoPublish && $node->getRootNode()->isAutoPublish()) {
-            $this->publishNode($node);
+            $this->publishNode($clone);
         }
 
         return $clone;

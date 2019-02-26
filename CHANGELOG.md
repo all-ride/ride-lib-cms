@@ -1,3 +1,7 @@
+## [1.6.5] - 2019-02-26
+### Updated
+- fixed automatically publish the cloned node, not the original node
+
 ## [1.6.4] - 2018-11-22
 ### Updated
 - improved node order implementation to keep nodes with the same order
