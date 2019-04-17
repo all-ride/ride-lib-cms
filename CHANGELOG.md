@@ -1,3 +1,7 @@
+## [1.6.6] - 2019-04-17
+### Updated
+- don't force lowercase node routes
+
 ## [1.6.5] - 2019-02-26
 ### Updated
 - fixed automatically publish the cloned node, not the original node
