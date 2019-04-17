@@ -124,7 +124,7 @@ class GenericNodeValidator implements NodeValidator {
             $tokens = explode('/', $route);
             foreach ($tokens as $index => $token) {
                 if ($token) {
-                    $token = StringHelper::safeString($token);
+                    $token = StringHelper::safeString($token, '-', false);
                 }
 
                 if (empty($token)) {
