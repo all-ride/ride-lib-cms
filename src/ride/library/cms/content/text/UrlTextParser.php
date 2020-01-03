@@ -2,7 +2,9 @@
 
 namespace ride\library\cms\content\text;
 
-use \simple_html_dom;
+use voku\helper\HtmlDomParser;
+
+use \Exception;
 
 /**
  * Text parser to replace relative URLs with absolute ones.
@@ -19,22 +21,23 @@ class UrlTextParser extends AbstractTextParser {
             return $text;
         }
 
-        $html = new simple_html_dom();
-        if ($html->load($text, true, false) === false) {
+        try {
+            $document = new HtmlDomParser($html);
+
+            $anchors = $document->find('a');
+            if ($anchors) {
+                $this->replaceUrls($anchors, 'href', $this->siteUrl);
+            }
+
+            $images = $document->find('img');
+            if ($images) {
+                $this->replaceUrls($images, 'src', $this->baseUrl);
+            }
+
+            return $document->html();
+        } catch (Exception $e) {
             return $text;
         }
-
-        $anchors = $html->find('a');
-        if ($anchors) {
-            $this->replaceUrls($anchors, 'href', $this->siteUrl);
-        }
-
-        $images = $html->find('img');
-        if ($images) {
-            $this->replaceUrls($images, 'src', $this->baseUrl);
-        }
-
-        return (string) $html;
     }
 
     /**
