@@ -1,3 +1,7 @@
+## [1.6.7] - 2020-01-03
+### Updated
+- changed vendor of simple_html_dom
+
 ## [1.6.6] - 2019-04-17
 ### Updated
 - don't force lowercase node routes
