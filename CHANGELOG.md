@@ -1,3 +1,7 @@
+## [1.6.8] - 2020-01-03
+### Updated
+- bugfix for vendor change of simple_html_dom
+
 ## [1.6.7] - 2020-01-03
 ### Updated
 - changed vendor of simple_html_dom
