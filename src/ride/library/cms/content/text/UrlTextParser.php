@@ -22,7 +22,7 @@ class UrlTextParser extends AbstractTextParser {
         }
 
         try {
-            $document = new HtmlDomParser($html);
+            $document = new HtmlDomParser($text);
 
             $anchors = $document->find('a');
             if ($anchors) {
@@ -47,7 +47,7 @@ class UrlTextParser extends AbstractTextParser {
      * @param string $baseUrl Base URL for the element
      * @return null
      */
-    protected function replaceUrls(array $elements, $attribute, $baseUrl) {
+    protected function replaceUrls($elements, $attribute, $baseUrl) {
         foreach ($elements as $element) {
             $element->$attribute = $this->node->resolveUrl($this->locale, $baseUrl, $element->$attribute);
         }
