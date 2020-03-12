@@ -1015,12 +1015,12 @@ class Node {
     public function resolveUrl($locale, $baseUrl, $url) {
         if (
             $url == '' ||
-            $url{0} == '#' ||
+            substr($url, 0, 1) == '#' ||
             strncmp($url, 'mailto:', 7) === 0 ||
             strncmp($url, 'http:', 5) === 0 ||
             strncmp($url, 'https:', 6) === 0 ||
             strncmp($url, 'tel:', 4) === 0 ||
-            ($url{0} == '/' && $url{1} == '/')
+            (substr($url, 0, 1) == '/' && substr($url, 1, 1) == '/')
         ) {
             return $url;
         }

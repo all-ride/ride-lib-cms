@@ -1,3 +1,7 @@
+## [1.6.9] - 2020-03-12
+### Updated
+- php 7.4 compatibility
+
 ## [1.6.8] - 2020-01-03
 ### Updated
 - bugfix for vendor change of simple_html_dom
