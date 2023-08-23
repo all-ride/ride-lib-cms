@@ -1157,9 +1157,13 @@ class Node {
 
         $now = time();
         $publishStart = $this->get(self::PROPERTY_PUBLISH_START);
-        $publishStart = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStart);
+        if ($publishStart) {
+            $publishStart = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStart);
+        }
         $publishStop = $this->get(self::PROPERTY_PUBLISH_STOP);
-        $publishStop = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStop);
+        if ($publishStop) {
+            $publishStop = DateTime::createFromFormat(NodeProperty::DATE_FORMAT, $publishStop);
+        }
 
         if ($publishStart && $publishStop) {
             if ($publishStart->getTimestamp() <= $now && $now < $publishStop->getTimestamp()) {
