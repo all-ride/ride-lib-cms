@@ -16,6 +16,16 @@ use ride\library\security\SecurityManager;
  */
 class Cms {
 
+    protected $nodeModel;
+
+    protected $themeModel;
+
+    protected $layoutModel;
+
+    protected $widgetModel;
+
+    protected $securityManager;
+
     /**
      * Constructs a new CMS facade
      * @param \ride\library\cms\node\NodeModel $nodeModel

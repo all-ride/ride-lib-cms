@@ -8,6 +8,7 @@ use ride\library\reflection\ReflectionHelper;
  * Implementation to parse context variables
  */
 class ContextVariableParser extends AbstractVariableParser {
+    protected $reflectionHelper;
 
     /**
      * Constructs a new variable parser

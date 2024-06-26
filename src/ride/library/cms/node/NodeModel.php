@@ -64,6 +64,8 @@ class NodeModel {
      */
     protected $draftRevision;
 
+    protected $widgetTable;
+
     /**
      * Creates a new node model
      * @param \ride\library\cms\node\type\NodeTypeManager $nodeTypeManager

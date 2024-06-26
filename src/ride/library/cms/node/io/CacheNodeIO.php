@@ -30,6 +30,12 @@ class CacheNodeIO extends AbstractNodeIO {
      */
     private $file;
 
+    private $lock;
+
+    private $needsClear;
+
+    private $needsWrite;
+
     /**
      * Constructs a new cached NodeIO
      * @param \ride\library\cms\node\io\NodeIO $io NodeIO which needs a cache
