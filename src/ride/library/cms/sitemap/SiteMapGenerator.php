@@ -34,6 +34,7 @@ class SiteMapGenerator {
      * @var string
      */
     const PROPERTY_SITEMAP_FREQUENCY = 'sitemap.frequency';
+    protected $cms;
 
     /**
      * Constructs a new site map generator

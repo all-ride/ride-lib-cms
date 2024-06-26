@@ -9,6 +9,8 @@ use ride\library\template\theme\ThemeModel as LibraryThemeModel;
  */
 class TemplateThemeModel implements ThemeModel {
 
+    protected $model;
+
     /**
      * Constructs a new theme model
      * @param \ride\library\template\theme\ThemeModel $model
